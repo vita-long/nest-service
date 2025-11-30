@@ -10,6 +10,7 @@ import { appConfig, databaseConfig, redisConfig } from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { HealthModule } from './modules/health/health.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { LoggerModule } from './common/modules/logger/logger.module';
 import { RedisCacheModule } from './common/modules/cache/cache.module';
 
@@ -44,6 +45,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     AuthModule,
     UserModule,
     HealthModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [
