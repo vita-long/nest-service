@@ -11,28 +11,28 @@ export class UserController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAllUser() {
-    const users = await this.userService.findAll();
+    const users = await this.userService.findAllUser();
     return users;
   }
 
-  @Get(':id')
+  @Get(':userId')
   @UseGuards(JwtAuthGuard)
-  async findOneUser(@Param('id') id: number) {
-    const user = await this.userService.findById(Number(id));
+  async findOneUser(@Param('userId') userId: string) {
+    const user = await this.userService.findById(userId);
     return user;
   }
 
-  @Put(':id')
+  @Put(':userId')
   @UseGuards(JwtAuthGuard)
-  async updateUser(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    const updatedUser = await this.userService.update(Number(id), updateUserDto);
+  async updateUser(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto) {
+    const updatedUser = await this.userService.update(userId, updateUserDto);
     return updatedUser;
   }
 
-  @Delete(':id')
+  @Delete(':userId')
   @UseGuards(JwtAuthGuard)
-  async removeUser(@Param('id') id: number) {
-    await this.userService.remove(Number(id));
+  async removeUser(@Param('userId') userId: string) {
+    await this.userService.remove(userId);
     return null;
   }
 }

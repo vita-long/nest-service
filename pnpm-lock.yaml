@@ -68,6 +68,9 @@ importers:
       typeorm:
         specifier: ^0.3.27
         version: 0.3.27(mysql2@3.15.3)(redis@5.10.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@22.19.1)(typescript@5.9.3))
+      uuidv7:
+        specifier: ^1.1.0
+        version: 1.1.0
       winston:
         specifier: ^3.18.3
         version: 3.18.3
@@ -3477,6 +3480,10 @@ packages:
 
   uuid@11.1.0:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
+  uuidv7@1.1.0:
+    resolution: {integrity: sha512-2VNnOC0+XQlwogChUDzy6pe8GQEys9QFZBGOh54l6qVfwoCUwwRvk7rDTgaIsRgsF5GFa5oiNg8LqXE3jofBBg==}
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -7282,6 +7289,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uuid@11.1.0: {}
+
+  uuidv7@1.1.0: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

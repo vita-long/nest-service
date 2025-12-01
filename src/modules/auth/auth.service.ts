@@ -10,13 +10,13 @@ import { RedisCacheService } from '../../common/modules/cache/cache.service';
 import * as bcrypt from 'bcrypt';
 
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   username: string;
   role: string;
 }
 
 export interface RefreshTokenPayload {
-  userId: number;
+  userId: string;
   tokenId?: string;
 }
 
@@ -55,20 +55,15 @@ export class AuthService {
     // Create new user
     const newUser = await this.userService.create(registerDto);
 
-    // Generate tokens
-    const tokens = this.generateTokens(newUser);
-
-    this.logger.info('用户注册成功', { userId: newUser.id, username: newUser.username });
+    this.logger.info('用户注册成功', { userId: newUser.userId, username: newUser.username });
     
     return {
       user: {
-        id: newUser.id,
+        userId: newUser.userId,
         username: newUser.username,
         email: newUser.email,
         role: newUser.role,
-      },
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      }
     };
   }
 
@@ -91,14 +86,14 @@ export class AuthService {
     }
 
     // 更新用户登录信息
-    await this.userService.update(user.id, {
+    await this.userService.update(user.userId, {
       status: true,
       lastLoginTime: new Date(),
       lastLoginIp: ipAddress
     });
 
     // 检查用户是否已有活跃令牌，如果有则使其失效
-    const existingTokenKey = `user:${user.id}:tokens`;
+    const existingTokenKey = `user:${user.userId}:tokens`;
     const existingTokens = await this.redisCacheService.get<string[]>(existingTokenKey);
     
     if (existingTokens && Array.isArray(existingTokens) && existingTokens.length > 0) {
@@ -119,19 +114,19 @@ export class AuthService {
     const refreshTokenExpiresIn = parseInt(this.configService.get('jwt.refreshTokenExpiresIn', '86400'), 10);
     
     // 生成唯一的tokenId
-    const tokenId = `${user.id}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
+    const tokenId = `${user.userId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
     
     // 存储令牌到Redis
     await this.redisCacheService.set(
       tokenId,
-      { userId: user.id, accessToken: tokens.accessToken },
+      { userId: user.userId, accessToken: tokens.accessToken },
       accessTokenExpiresIn,
       CACHE_PREFIX.ACCESS_TOKEN
     );
     
     await this.redisCacheService.set(
       tokenId,
-      { userId: user.id, refreshToken: tokens.refreshToken },
+      { userId: user.userId, refreshToken: tokens.refreshToken },
       refreshTokenExpiresIn,
       CACHE_PREFIX.REFRESH_TOKEN
     );
@@ -144,15 +139,10 @@ export class AuthService {
         refreshTokenExpiresIn
       );
     
-    this.logger.info('用户登录成功', { userId: user.id, username: user.username, ipAddress });
-    
+    this.logger.info('用户登录成功', { userId: user.userId, username: user.username, ipAddress });
+    const { password, ...otherUserInfo } = user;
     return {
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
+      user: otherUserInfo,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };
@@ -166,7 +156,7 @@ export class AuthService {
   private generateTokens(user: User) {
     // 生成访问令牌
     const accessTokenPayload: JwtPayload = {
-      userId: user.id,
+      userId: user.userId,
       username: user.username,
       role: user.role,
     };
@@ -174,7 +164,7 @@ export class AuthService {
 
     // 生成刷新令牌
     const refreshTokenPayload: RefreshTokenPayload = {
-      userId: user.id,
+      userId: user.userId,
     };
     const refreshToken = this.jwtService.sign(refreshTokenPayload, {
       secret: this.configService.get('jwt.refreshTokenSecret'),
@@ -188,7 +178,7 @@ export class AuthService {
   /**
    * 退出登录，将用户状态设置为离线并使所有令牌失效
    */
-  async logout(userId: number): Promise<void> {
+  async logout(userId: string): Promise<void> {
     this.logger.info('用户退出登录', { userId });
     
     // 获取用户的活跃令牌列表
@@ -274,19 +264,19 @@ export class AuthService {
       const refreshTokenExpiresIn = parseInt(this.configService.get('jwt.refreshTokenExpiresIn', '86400'), 10);
       
       // 生成新的tokenId
-      const newTokenId = `${user.id}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
+      const newTokenId = `${user.userId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
       
       // 存储新令牌到Redis
       await this.redisCacheService.set(
         newTokenId,
-        { userId: user.id, accessToken: tokens.accessToken },
+        { userId: user.userId, accessToken: tokens.accessToken },
         accessTokenExpiresIn,
         CACHE_PREFIX.ACCESS_TOKEN
       );
       
       await this.redisCacheService.set(
         newTokenId,
-        { userId: user.id, refreshToken: tokens.refreshToken },
+        { userId: user.userId, refreshToken: tokens.refreshToken },
         refreshTokenExpiresIn,
         CACHE_PREFIX.REFRESH_TOKEN
       );

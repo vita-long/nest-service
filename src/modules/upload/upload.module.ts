@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
+import { Resources } from '@/entities/resources.entity';
 
 // 确保上传目录存在
 const uploadDir = join(__dirname, '..', '..', '..', 'uploads');
@@ -14,6 +16,7 @@ if (!existsSync(uploadDir)) {
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Resources]),
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
