@@ -1,4 +1,6 @@
-import { Injectable, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
+import { BusinessException } from '@/common/exceptions/business.exception';
+import { ErrorCode } from '@/common/types/exception';
 import { Express } from 'express';
 import { join, extname } from 'path';
 import { existsSync, unlinkSync } from 'fs';
@@ -51,7 +53,11 @@ export class UploadService {
         if (file.path && existsSync(file.path)) {
           unlinkSync(file.path);
         }
-        throw new BadRequestException(`文件类型不允许上传。允许的类型: ${this.allowedFileTypes[type as keyof typeof this.allowedFileTypes]?.join(', ') || '所有类型'}`);
+        const allowedTypes = this.allowedFileTypes[type as keyof typeof this.allowedFileTypes]?.join(', ') || '所有类型';
+        throw new BusinessException(
+          ErrorCode.FILE_TYPE_INVALID,
+          `文件类型不允许上传。允许的类型: ${allowedTypes}`
+        );
       }
 
       // 返回上传结果
@@ -75,10 +81,14 @@ export class UploadService {
       }
       
       // 重新抛出错误或转换为适当的HTTP异常
-      if (error instanceof HttpException) {
+      if (error instanceof BusinessException) {
         throw error;
       }
-      throw new HttpException('文件上传失败: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new BusinessException(
+        ErrorCode.FILE_UPLOAD_ERROR,
+        '文件上传失败: ' + error.message,
+        { originalError: error.message }
+      );
     }
   }
 
@@ -128,9 +138,10 @@ export class UploadService {
           if (file.path && existsSync(file.path)) {
             unlinkSync(file.path);
           }
+          const allowedTypes = this.allowedFileTypes[type as keyof typeof this.allowedFileTypes]?.join(', ') || '所有类型';
           results.errors.push({
             originalname: file.originalname,
-            error: `文件类型不允许上传。允许的类型: ${this.allowedFileTypes[type as keyof typeof this.allowedFileTypes]?.join(', ') || '所有类型'}`
+            error: `文件类型不允许上传。允许的类型: ${allowedTypes}`
           });
           results.success = false;
           continue;

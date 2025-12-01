@@ -14,7 +14,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
   intercept(context: ExecutionContext, next: CallHandler<T>): Observable<Response<T>> {
     return next.handle().pipe(
       map((data) => ({
-        code: 200,
+        code: 0,
         data,
         msg: '',
         timestamp: new Date().toISOString(),
