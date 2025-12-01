@@ -74,7 +74,7 @@ export class Resources {
 
   /**
    * 文件格式
-   * 文件的扩展名或MIME类型
+   * 文件的扩展名
    */
   @Column({
     name: 'format',
@@ -84,6 +84,19 @@ export class Resources {
     comment: '文件格式',
   })
   format: string;
+
+  /**
+   * MIME类型
+   * 文件的MIME类型
+   */
+  @Column({
+    name: 'mimetype',
+    type: 'varchar',
+    length: 100,
+    nullable: false,
+    comment: 'MIME类型',
+  })
+  mimetype: string;
 
   /**
    * 文件大小

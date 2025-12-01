@@ -79,13 +79,14 @@ export class UploadService {
       const resource = new Resources();
       resource.name = file.originalname;
       resource.originalName = file.originalname;
-      resource.path = file.path;
+      resource.path = this.getFileUrl(file.filename, type);
       resource.type = type || 'default';
       resource.format = extname(file.originalname).substring(1).toLowerCase(); // 移除点号
-          resource.size = file.size;
-          resource.status = 1; // 默认启用
-          resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
-          // userId可以在需要时设置，当前保持为null
+      resource.size = file.size;
+      resource.status = 1; // 默认启用
+      resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
+      resource.mimetype = file.mimetype; // 存储MIME类型
+      // userId可以在需要时设置，当前保持为null
 
       // 保存到数据库
       const savedResource = await this.resourcesRepository.save(resource);
@@ -181,16 +182,17 @@ export class UploadService {
         }
 
         // 创建资源实体
-        const resource = new Resources();
-        resource.name = file.originalname;
-        resource.originalName = file.originalname;
-        resource.path = file.path;
-        resource.type = type || 'default';
-        resource.format = extname(file.originalname).substring(1).toLowerCase(); // 移除点号
-        resource.size = file.size;
-        resource.status = 1; // 默认启用
-        resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
-        // userId可以在需要时设置，当前保持为null
+      const resource = new Resources();
+      resource.name = file.originalname;
+      resource.originalName = file.originalname;
+      resource.path = file.path;
+      resource.type = type || 'default';
+      resource.format = extname(file.originalname).substring(1).toLowerCase(); // 移除点号
+      resource.size = file.size;
+      resource.status = 1; // 默认启用
+      resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
+      resource.mimetype = file.mimetype; // 存储MIME类型
+      // userId可以在需要时设置，当前保持为null
 
         // 保存到数据库
         const savedResource = await this.resourcesRepository.save(resource);
