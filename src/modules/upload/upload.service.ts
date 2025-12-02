@@ -5,7 +5,7 @@ import { Express } from 'express';
 import { join, extname } from 'path';
 import { existsSync, unlinkSync } from 'fs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Resources } from '@/entities/resources.entity';
 
 export interface MulterFile extends Express.Multer.File {}
@@ -240,37 +240,146 @@ export class UploadService {
   }
 
   /**
-   * 删除文件
-   * @param filename 文件名
-   * @param type 文件类型目录
+   * 根据resourceId删除单个文件
+   * @param resourceId 资源ID
    * @returns 是否成功
    */
-  async deleteFile(filename: string, type?: keyof typeof this.allowedFileTypes): Promise<boolean> {
+  async deleteFile(resourceId: string): Promise<boolean> {
     try {
-      const filePath = join(__dirname, '..', '..', '..', 'uploads', type || 'default', filename);
-      
-      // 先从数据库中查找并软删除资源记录
+      // 先从数据库中查找资源记录
       const resource = await this.resourcesRepository.findOne({
         where: {
-          path: filePath,
-          type: type || 'default'
+          resourceId: resourceId
         }
       });
       
-      if (resource) {
-        resource.status = 2; // 标记为已删除
-        await this.resourcesRepository.save(resource);
+      if (!resource) {
+        throw new BusinessException(ErrorCode.FILE_NOT_FOUND, '文件不存在');
       }
       
-      // 然后删除实际文件
+      // 标记为已删除
+      resource.status = 2;
+      await this.resourcesRepository.save(resource);
+      
+      // 构建文件路径并删除实际文件
+      const filePath = join(__dirname, '..', '..', '..', 'uploads', resource.type || 'default', resource.name);
       if (existsSync(filePath)) {
         unlinkSync(filePath);
-        return true;
       }
-      return false;
+      
+      return true;
     } catch (error) {
       console.error('Failed to delete file:', error);
+      if (error instanceof BusinessException) {
+        throw error;
+      }
       return false;
     }
+  }
+
+  /**
+   * 批量删除文件
+   * @param resourceIds 资源ID数组
+   * @returns 删除结果
+   */
+  async batchDeleteFiles(resourceIds: string[]): Promise<{
+    success: boolean;
+    deletedCount: number;
+    failedIds?: string[];
+    message?: string;
+  }> {
+    try {
+      if (!Array.isArray(resourceIds) || resourceIds.length === 0) {
+        return {
+          success: false,
+          deletedCount: 0,
+          message: '请提供有效的资源ID列表'
+        };
+      }
+
+      // 查找所有资源记录
+      const resources = await this.resourcesRepository.find({
+        where: {
+          resourceId: In(resourceIds)
+        }
+      });
+
+      if (resources.length === 0) {
+        return {
+          success: false,
+          deletedCount: 0,
+          message: '未找到任何资源'
+        };
+      }
+
+      // 标记为已删除
+      const updatedResources = resources.map(resource => {
+        resource.status = 2;
+        return resource;
+      });
+
+      await this.resourcesRepository.save(updatedResources);
+
+      // 删除实际文件
+      const failedIds: string[] = [];
+      for (const resource of resources) {
+        try {
+          const filePath = join(__dirname, '..', '..', '..', 'uploads', resource.type || 'default', resource.name);
+          if (existsSync(filePath)) {
+            unlinkSync(filePath);
+          }
+        } catch (error) {
+          console.error(`Failed to delete file ${resource.name}:`, error);
+          failedIds.push(resource.resourceId);
+        }
+      }
+
+      return {
+        success: failedIds.length === 0,
+        deletedCount: resources.length - failedIds.length,
+        failedIds: failedIds.length > 0 ? failedIds : undefined
+      };
+    } catch (error) {
+      console.error('Failed to batch delete files:', error);
+      return {
+        success: false,
+        deletedCount: 0,
+        message: '批量删除失败: ' + (error instanceof Error ? error.message : '未知错误')
+      };
+    }
+  }
+
+  /**
+   * 分页查询所有图片
+   * @param page 页码，从1开始
+   * @param limit 每页数量
+   * @returns 图片列表和分页信息
+   */
+  async getImages(page: number = 1, limit: number = 10) {
+    // 验证参数
+    if (page < 1) page = 1;
+    if (limit < 1 || limit > 100) limit = 10;
+    
+    const skip = (page - 1) * limit;
+    
+    // 查询启用状态的图片资源
+    const [images, total] = await this.resourcesRepository.findAndCount({
+      where: {
+        type: 'image',
+        status: 1 // 仅查询启用状态的图片
+      },
+      order: {
+        createdAt: 'DESC' // 按创建时间倒序排列
+      },
+      skip,
+      take: limit
+    });
+    
+    return {
+      list: images,
+      current: page,
+      pageSize: limit,
+      total
+    };
   }
 }

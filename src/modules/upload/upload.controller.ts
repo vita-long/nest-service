@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UploadedFiles, Query, Body, UseInterceptors, ParseFilePipe, MaxFileSizeValidator } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, UploadedFile, UploadedFiles, Query, Body, UseInterceptors, ParseFilePipe, MaxFileSizeValidator } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 
@@ -91,6 +91,47 @@ export class UploadController {
         : `部分文件上传失败。成功: ${result.data?.length || 0}, 失败: ${result.errors?.length || 0}`,
       data: result,
     };
+  }
+
+  /**
+   * 分页查询图片列表
+   * @param page 页码
+   * @param limit 每页数量
+   * @returns 图片列表和分页信息
+   */
+  @Get('images')
+  async getImages(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10'
+  ) {
+    // 转换参数为数字
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    
+    // 调用服务层方法获取图片列表
+    const result = await this.uploadService.getImages(pageNum, limitNum);
+    
+    return result;
+  }
+
+  /**
+   * 删除文件
+   * @param resourceId 文件资源ID
+   * @returns 删除结果
+   */
+  @Delete('file/:resourceId')
+  async deleteFile(@Param('resourceId') resourceId: string) {
+    return await this.uploadService.deleteFile(resourceId);
+  }
+
+  /**
+   * 批量删除文件
+   * @param body 请求体，包含resourceIds数组
+   * @returns 批量删除结果
+   */
+  @Delete('files/batch')
+  async batchDeleteFiles(@Body() body: { resourceIds: string[] }) {
+    return await this.uploadService.batchDeleteFiles(body.resourceIds);
   }
 
 }
