@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisCacheModule } from '@/common/modules/cache/cache.module';
+import { jwtConfig } from '@/config';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
@@ -17,6 +21,24 @@ if (!existsSync(uploadDir)) {
 @Module({
   imports: [
     TypeOrmModule.forFeature([Resources]),
+    RedisCacheModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule.forFeature(jwtConfig)],
+      useFactory: (configService: ConfigService) => {
+        const algorithm = configService.get('jwt.algorithm') || 'HS256';
+        return {
+          secret: configService.get('jwt.secret'),
+          signOptions: {
+            expiresIn: configService.get('jwt.expiresIn'),
+            algorithm,
+          },
+          verifyOptions: {
+            algorithms: [algorithm],
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {

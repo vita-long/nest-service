@@ -52,7 +52,7 @@ export class UploadService {
     return `${prefixId}${Date.now()}${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  async handleSingleUpload(file: MulterFile, type: keyof typeof this.allowedFileTypes): Promise<{
+  async handleSingleUpload(file: MulterFile, type: keyof typeof this.allowedFileTypes, userId: string): Promise<{
     filename: string;
     originalname: string;
     path: string;
@@ -62,6 +62,14 @@ export class UploadService {
     resourceId: string;
   }> {
     try {
+      // 验证userId
+      if (!userId) {
+        throw new BusinessException(
+          ErrorCode.UNAUTHORIZED,
+          '请先登录再进行上传操作'
+        );
+      }
+      
       // 验证文件类型
       if (type && !this.validateFileType(file, type)) {
         // 如果文件类型不允许，删除已上传的文件
@@ -86,7 +94,7 @@ export class UploadService {
       resource.status = 1; // 默认启用
       resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
       resource.mimetype = file.mimetype; // 存储MIME类型
-      // userId可以在需要时设置，当前保持为null
+      resource.userId = userId; // 设置上传用户ID
 
       // 保存到数据库
       const savedResource = await this.resourcesRepository.save(resource);
@@ -130,7 +138,7 @@ export class UploadService {
    * @param type 上传类型
    * @returns 上传结果数组
    */
-  async handleBatchUpload(files: MulterFile[], type: keyof typeof this.allowedFileTypes): Promise<{
+  async handleBatchUpload(files: MulterFile[], type: keyof typeof this.allowedFileTypes, userId: string): Promise<{
     success: boolean;
     data?: Array<{
       filename: string;
@@ -166,6 +174,16 @@ export class UploadService {
     // 逐个处理文件
     for (const file of files) {
       try {
+        // 验证userId
+        if (!userId) {
+          results.errors.push({
+            originalname: file.originalname,
+            error: '请先登录再进行上传操作'
+          });
+          results.success = false;
+          continue;
+        }
+        
         // 验证文件类型
         if (type && !this.validateFileType(file, type)) {
           // 如果文件类型不允许，删除已上传的文件

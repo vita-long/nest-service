@@ -35,6 +35,6 @@ import { RedisCacheModule } from '@/common/modules/cache/cache.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard],
-  exports: [JwtAuthGuard],
+  exports: [JwtAuthGuard, JwtModule], // 导出JwtModule以便提供JwtService
 })
 export class AuthModule {}

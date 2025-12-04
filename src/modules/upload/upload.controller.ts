@@ -1,6 +1,8 @@
-import { Controller, Post, Get, Delete, Param, UploadedFile, UploadedFiles, Query, Body, UseInterceptors, ParseFilePipe, MaxFileSizeValidator } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, UploadedFile, UploadedFiles, Query, Body, UseInterceptors, ParseFilePipe, MaxFileSizeValidator, UseGuards } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { GetCurrentUser } from '@/common/decorators/get-current-user.decorator';
 
 @Controller('upload')
 export class UploadController {
@@ -13,6 +15,7 @@ export class UploadController {
    * @returns 上传结果
    */
   @Post('single')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadSingleFile(
     @UploadedFile(
@@ -23,6 +26,7 @@ export class UploadController {
         fileIsRequired: true,
       })
     ) file: Express.Multer.File,
+    @GetCurrentUser('userId') userId: string,
     @Body('type') bodyType?: string
   ) {
     // 优先从查询参数获取type，如果没有则从请求体获取，最后使用默认值
@@ -30,7 +34,7 @@ export class UploadController {
     
     // 使用默认值'default'
     const uploadType = (type || 'default') as 'default' | 'image' | 'document' | 'audio' | 'video';
-    const result = await this.uploadService.handleSingleUpload(file, uploadType);
+    const result = await this.uploadService.handleSingleUpload(file, uploadType, userId);
     
     // 添加访问URL
     result['url'] = this.uploadService.getFileUrl(result.filename, uploadType);
@@ -46,6 +50,7 @@ export class UploadController {
    * @returns 上传结果
    */
   @Post('batch')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files', 10)) // 默认限制10个文件
   async uploadBatchFiles(
     @UploadedFiles(
@@ -56,6 +61,7 @@ export class UploadController {
         fileIsRequired: true,
       })
     ) files: Array<Express.Multer.File>,
+    @GetCurrentUser('userId') userId: string,
     @Body('type') bodyType?: string,
     @Query('limit') limit?: string
   ) {
@@ -74,7 +80,7 @@ export class UploadController {
     // 使用默认值'default'
     const uploadType = (type || 'default') as 'default' | 'image' | 'document' | 'audio' | 'video';
     console.log('batch upload type:', uploadType);
-    const result = await this.uploadService.handleBatchUpload(files, uploadType);
+    const result = await this.uploadService.handleBatchUpload(files, uploadType, userId);
     
     // 为成功上传的文件添加访问URL
     if (result.data) {

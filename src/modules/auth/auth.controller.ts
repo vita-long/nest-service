@@ -1,5 +1,6 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Ip, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { GetCurrentUser } from '@/common/decorators/get-current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -41,5 +42,21 @@ export class AuthController {
   async logout(@Request() req) {
     await this.authService.logout(req.user.userId);
     return { message: '退出登录成功' };
+  }
+
+  /**
+   * 是否在登录状态，用在登录页面检测
+   * @returns 返回登录状态和用户信息
+   */
+  @Post('is-login')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async isLogin(@GetCurrentUser() user) {
+    // 返回登录状态和基本用户信息
+    return {
+      isLogin: true,
+      user,
+      timestamp: new Date().getTime()
+    };
   }
 }
