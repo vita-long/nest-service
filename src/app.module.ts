@@ -13,6 +13,8 @@ import { HealthModule } from './modules/health/health.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { LoggerModule } from './common/modules/logger/logger.module';
 import { RedisCacheModule } from './common/modules/cache/cache.module';
+import { CategoryModule } from './modules/category/category.module';
+import { ProductModule } from './modules/product/product.module';
 
 // Filters
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -46,6 +48,8 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     UserModule,
     HealthModule,
     UploadModule,
+    CategoryModule,
+    ProductModule,
   ],
   controllers: [],
   providers: [

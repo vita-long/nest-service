@@ -106,12 +106,12 @@ export class AuthService {
       await this.redisCacheService.delete(existingTokenKey);
     }
 
-    // Generate tokens
-    const tokens = this.generateTokens(user);
-    
     // 获取令牌过期时间（秒）
     const accessTokenExpiresIn = parseInt(this.configService.get('jwt.expiresIn', '7200'), 10);
-    const refreshTokenExpiresIn = parseInt(this.configService.get('jwt.refreshTokenExpiresIn', '86400'), 10);
+    const refreshTokenExpiresIn = parseInt(this.configService.get('jwt.refreshTokenExpiresIn', '25200'), 10);
+    
+    // Generate tokens with specific expiration times
+    const tokens = this.generateTokens(user, accessTokenExpiresIn, refreshTokenExpiresIn);
     
     // 生成唯一的tokenId
     const tokenId = `${user.userId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
@@ -153,14 +153,17 @@ export class AuthService {
   /**
    * 生成访问令牌和刷新令牌
    */
-  private generateTokens(user: User) {
+  private generateTokens(user: User, accessTokenExpiresIn?: number, refreshTokenExpiresIn?: number) {
     // 生成访问令牌
     const accessTokenPayload: JwtPayload = {
       userId: user.userId,
       username: user.username,
       role: user.role,
     };
-    const accessToken = this.jwtService.sign(accessTokenPayload);
+    const accessToken = this.jwtService.sign(accessTokenPayload, {
+      expiresIn: accessTokenExpiresIn || this.configService.get('jwt.expiresIn'),
+      algorithm: this.configService.get('jwt.algorithm'),
+    });
 
     // 生成刷新令牌
     const refreshTokenPayload: RefreshTokenPayload = {
@@ -168,7 +171,7 @@ export class AuthService {
     };
     const refreshToken = this.jwtService.sign(refreshTokenPayload, {
       secret: this.configService.get('jwt.refreshTokenSecret'),
-      expiresIn: this.configService.get('jwt.refreshTokenExpiresIn'),
+      expiresIn: refreshTokenExpiresIn || this.configService.get('jwt.refreshTokenExpiresIn'),
       algorithm: this.configService.get('jwt.algorithm'),
     });
 
@@ -256,12 +259,12 @@ export class AuthService {
         throw new UnauthorizedException('无效的刷新令牌');
       }
 
-      // 生成新的令牌
-      const tokens = this.generateTokens(user as User);
-      
       // 获取新令牌过期时间
       const accessTokenExpiresIn = parseInt(this.configService.get('jwt.expiresIn', '3600'), 10);
       const refreshTokenExpiresIn = parseInt(this.configService.get('jwt.refreshTokenExpiresIn', '86400'), 10);
+      
+      // 生成新的令牌
+      const tokens = this.generateTokens(user as User, accessTokenExpiresIn, refreshTokenExpiresIn);
       
       // 生成新的tokenId
       const newTokenId = `${user.userId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;

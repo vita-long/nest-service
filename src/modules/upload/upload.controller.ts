@@ -31,7 +31,7 @@ export class UploadController {
   ) {
     // 优先从查询参数获取type，如果没有则从请求体获取，最后使用默认值
     const type = bodyType;
-    
+
     // 使用默认值'default'
     const uploadType = (type || 'default') as 'default' | 'image' | 'document' | 'audio' | 'video';
     const result = await this.uploadService.handleSingleUpload(file, uploadType, userId);

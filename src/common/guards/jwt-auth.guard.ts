@@ -37,13 +37,15 @@ export class JwtAuthGuard implements CanActivate {
     if (bearer !== 'Bearer' || !token) {
       throw new UnauthorizedException('Invalid authorization header format');
     }
-
+    
     try {
       const algorithm = this.configService.get('jwt.algorithm') || 'HS256';
       const payload = this.jwtService.verify<JwtPayload>(token, {
         secret: this.configService.get('jwt.secret'),
         algorithms: [algorithm],
       });
+
+      console.log(payload);
       
       // 验证令牌是否在Redis中存在（通过用户ID查找所有活跃令牌）
       const userId = payload.userId;
@@ -54,7 +56,6 @@ export class JwtAuthGuard implements CanActivate {
         this.logger.warn('Token validation failed: No active tokens found for user', { userId });
         throw new UnauthorizedException('Token has been invalidated');
       }
-      
       // 检查令牌是否在Redis中有效
       let tokenFound = false;
       for (const tokenId of userTokens) {
