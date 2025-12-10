@@ -15,6 +15,7 @@ import { LoggerModule } from './common/modules/logger/logger.module';
 import { RedisCacheModule } from './common/modules/cache/cache.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
+import { OrderModule } from './modules/order/order.module';
 
 // Filters
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -50,6 +51,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     UploadModule,
     CategoryModule,
     ProductModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [
