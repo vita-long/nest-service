@@ -17,6 +17,8 @@ import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
 
+import { PaymentModule } from './modules/payment/payment.module';
+
 // Filters
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 // Interceptors
@@ -52,6 +54,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     CategoryModule,
     ProductModule,
     OrderModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [
