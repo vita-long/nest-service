@@ -4,13 +4,16 @@ import { Repository } from 'typeorm';
 import { Product } from '../../entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { AdjustStockDto } from './dto/adjust-stock.dto';
 import { CategoryService } from '../category/category.service';
 import { uuidv7 } from 'uuidv7';
+import { StockHistory } from '../../entities/stock-history.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
+    @InjectRepository(StockHistory) private stockHistoryRepository: Repository<StockHistory>,
     private categoryService: CategoryService
   ) {}
 
@@ -145,7 +148,7 @@ export class ProductService {
     });
   }
 
-  async updateStock(productId: string, quantity: number): Promise<void> {
+  async updateStock(productId: string, quantity: number, type: 'purchase' | 'sale' | 'adjustment' = 'adjustment', operator?: string, remark?: string): Promise<void> {
     const product = await this.findById(productId);
     const newStock = product.stock + quantity;
     
@@ -154,10 +157,68 @@ export class ProductService {
     }
     
     await this.productRepository.update({ productId }, { stock: newStock });
+    
+    // 记录库存历史
+    const stockHistory = this.stockHistoryRepository.create({
+      productId: product.productId,
+      previousStock: product.stock,
+      changeQuantity: quantity,
+      currentStock: newStock,
+      type,
+      operator,
+      remark
+    });
+    
+    await this.stockHistoryRepository.save(stockHistory);
+  }
+
+  async adjustStock(productId: string, adjustStockDto: AdjustStockDto): Promise<void> {
+    const { changeQuantity, type, operator, remark } = adjustStockDto;
+    await this.updateStock(productId, changeQuantity, type, operator, remark);
+  }
+
+  async getStockHistory(productId: string, limit?: number, offset?: number): Promise<{ list: StockHistory[], total: number }> {
+    // 验证产品是否存在
+    await this.findById(productId);
+
+    const query = this.stockHistoryRepository.createQueryBuilder('stockHistory')
+      .where('stockHistory.productId = :productId', { productId })
+      .leftJoinAndSelect('stockHistory.product', 'product');
+    
+    if (limit) {
+      query.limit(limit);
+    }
+    if (offset) {
+      query.offset(offset);
+    }
+    
+    const [items, totalCount] = await query.orderBy('stockHistory.createdAt', 'DESC').getManyAndCount();
+    
+    return { list: items, total: totalCount };
+  }
+
+  async getLowStockProducts(threshold: number = 10, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
+    const query = this.productRepository.createQueryBuilder('product')
+      .where('product.stock <= :threshold', { threshold })
+      .leftJoinAndSelect('product.category', 'category');
+    
+    if (limit) {
+      query.limit(limit);
+    }
+    if (offset) {
+      query.offset(offset);
+    }
+    
+    const [items, totalCount] = await query.orderBy('product.stock', 'ASC').getManyAndCount();
+    
+    return { list: items, total: totalCount };
   }
 
   async updateSales(productId: string, quantity: number): Promise<void> {
     const product = await this.findById(productId);
     await this.productRepository.update({ productId }, { sales: product.sales + quantity });
+    
+    // 记录销售库存变化
+    await this.updateStock(productId, -quantity, 'sale', undefined, `Sale of ${quantity} units`);
   }
 }

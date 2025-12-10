@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from '../../entities/product.entity';
+import { StockHistory } from '../../entities/stock-history.entity';
 import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { CategoryModule } from '../category/category.module';
@@ -11,7 +12,7 @@ import { jwtConfig } from '../../config';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product]),
+    TypeOrmModule.forFeature([Product, StockHistory]),
     CategoryModule,
     AuthModule, // 导入AuthModule以获取JwtService
     RedisCacheModule, // 导入RedisCacheModule以获取RedisCacheService
