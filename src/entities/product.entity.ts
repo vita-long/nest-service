@@ -36,6 +36,13 @@ export class Product {
   description?: string;
 
   /**
+   * 基础价格
+   * 产品的基础销售价格，不包含任何折扣或额外费用
+   */
+  @Column({ name: 'base_price', type: 'decimal', precision: 10, scale: 2, nullable: true, comment: '基础价格' })
+  basePrice: number;
+
+  /**
    * 产品价格
    * 产品的销售价格，支持小数
    */
