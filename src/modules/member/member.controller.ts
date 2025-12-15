@@ -37,17 +37,6 @@ export class MemberController {
   }
 
   /**
-   * 根据ID获取会员等级
-   * @param id 会员等级ID
-   * @returns 会员等级
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get('levels/:id')
-  getMemberLevelById(@Param('id') id: string) {
-    return this.memberService.getMemberLevelById(+id);
-  }
-
-  /**
    * 更新会员等级
    * @param id 会员等级ID
    * @param updateMemberLevelDto 更新会员等级的数据
@@ -70,25 +59,33 @@ export class MemberController {
   }
 
   /**
+   * 开通会员
+   */
+
+  /**
+   * 获取所有会员信息（分页）
+   * @param page 页码
+   * @param limit 每页数量
+   * @returns 会员信息列表和总数
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('list')
+  getMemberInfoList(@Query('page') page: string, @Query('limit') limit: string) {
+    return this.memberService.getMemberInfo(
+      page ? +page : 1,
+      limit ? +limit : 10,
+    );
+  }
+
+  /**
    * 获取当前用户的会员信息
    * @param req 请求对象，包含用户信息
    * @returns 会员信息
    */
   @UseGuards(JwtAuthGuard)
-  @Get('info')
+  @Get('info/me')
   getCurrentMemberInfo(@Request() req) {
-    return this.memberService.getMemberInfo(req.user.userId);
-  }
-
-  /**
-   * 根据用户ID获取会员信息
-   * @param userId 用户ID
-   * @returns 会员信息
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get('info/:userId')
-  getMemberInfoById(@Param('userId') userId: string) {
-    return this.memberService.getMemberInfo(userId);
+    return this.memberService.getMemberInfoById(req.user.userId);
   }
 
   /**
@@ -156,6 +153,7 @@ export class MemberController {
   @UseGuards(JwtAuthGuard)
   @Post('subscribe/:levelId')
   subscribeMember(@Request() req, @Param('levelId') levelId: string) {
+    console.log(levelId)
     return this.memberService.subscribeMember(req.user.userId, +levelId);
   }
 

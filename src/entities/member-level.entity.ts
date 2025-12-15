@@ -15,16 +15,14 @@ export class MemberLevel {
 
   /**
    * 等级名称
-   * 会员等级的显示名称，如"种子会员"、"玫瑰会员"等
    */
   @Column({ name: 'name', nullable: false, unique: true, length: 50, comment: '等级名称' })
   name: string;
 
   /**
    * 等级标识
-   * 会员等级的唯一标识，如"seed"、"rose"等
    */
-  @Column({ name: 'code', nullable: false, unique: true, length: 50, comment: '等级标识' })
+  @Column({ name: 'code', nullable: false, unique: true, length: 50, comment: '等级code' })
   code: string;
 
   /**

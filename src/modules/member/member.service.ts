@@ -131,11 +131,28 @@ export class MemberService {
   }
 
   /**
-   * 获取会员信息
+   * 获取所有会员信息（分页）
+   * @param page 页码
+   * @param limit 每页数量
+   * @returns 会员信息列表和总数
+   */
+  async getMemberInfo(page: number = 1, limit: number = 10): Promise<{ list: MemberInfo[]; total: number }> {
+    const [data, total] = await this.memberInfoRepository.findAndCount({
+      relations: ['currentLevel'],
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    console.log(data);
+    return { list: data, total };
+  }
+
+  /**
+   * 根据用户ID获取单个会员信息
    * @param userId 用户ID
    * @returns 会员信息
    */
-  async getMemberInfo(userId: string): Promise<MemberInfo> {
+  async getMemberInfoById(userId: string): Promise<MemberInfo> {
     const memberInfo = await this.memberInfoRepository.findOne({
       where: { userId },
       relations: ['currentLevel'],
@@ -163,9 +180,9 @@ export class MemberService {
       throw new ConflictException('会员信息已存在');
     }
 
-    // 获取默认会员等级（种子会员）
+    // 获取默认会员等级
     const defaultLevel = await this.memberLevelRepository.findOne({
-      where: { code: 'seed' },
+      where: { code: 'bronze' },
     });
 
     if (!defaultLevel) {
@@ -192,7 +209,7 @@ export class MemberService {
    */
   async adjustPoints(adjustPointsDto: AdjustPointsDto): Promise<MemberInfo> {
     const { userId, amount, type, reason } = adjustPointsDto;
-    const memberInfo = await this.getMemberInfo(userId);
+    const memberInfo = await this.getMemberInfoById(userId);
 
     // 计算调整后的积分
     let newPoints;
@@ -234,7 +251,7 @@ export class MemberService {
    */
   async adjustGrowthValue(adjustGrowthValueDto: AdjustGrowthValueDto): Promise<MemberInfo> {
     const { userId, amount, type, reason } = adjustGrowthValueDto;
-    const memberInfo = await this.getMemberInfo(userId);
+    const memberInfo = await this.getMemberInfoById(userId);
 
     // 计算调整后的成长值
     let newGrowthValue;
@@ -264,7 +281,7 @@ export class MemberService {
     // 检查是否需要自动升级会员等级
     await this.checkAndUpgradeMemberLevel(memberInfo);
 
-    return await this.getMemberInfo(userId); // 返回更新后的完整信息
+    return await this.getMemberInfoById(userId); // 返回更新后的完整信息
   }
 
   /**
@@ -274,7 +291,7 @@ export class MemberService {
    * @returns 会员订阅信息
    */
   async subscribeMember(userId: string, levelId: number): Promise<MemberSubscription> {
-    const memberInfo = await this.getMemberInfo(userId);
+    const memberInfo = await this.getMemberInfoById(userId);
     const memberLevel = await this.getMemberLevelById(levelId);
 
     // 创建订阅信息

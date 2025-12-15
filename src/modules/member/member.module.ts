@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from '../auth/auth.module';
 import { RedisCacheModule } from '@/common/modules/cache/cache.module';
 
 import { MemberController } from './member.controller';
 import { MemberService } from './member.service';
+import { MemberLevelSeed } from './seed/member-level.seed';
+import { SeedMemberLevelsCommand } from './commands/seed-member-levels.command';
 import { MemberLevel } from '../../entities/member-level.entity';
 import { MemberInfo } from '../../entities/member-info.entity';
 import { PointsHistory } from '../../entities/points-history.entity';
@@ -17,18 +18,17 @@ import { MemberSubscription } from '../../entities/member-subscription.entity';
  */
 @Module({
   imports: [
-    AuthModule,
     RedisCacheModule,
     TypeOrmModule.forFeature([
       MemberLevel,
       MemberInfo,
       PointsHistory,
       GrowthValueHistory,
-      MemberSubscription,
+      MemberSubscription
     ]),
   ],
   controllers: [MemberController],
-  providers: [MemberService],
+  providers: [MemberService, MemberLevelSeed, SeedMemberLevelsCommand],
   exports: [MemberService], // 导出服务，以便其他模块可以使用
 })
 export class MemberModule {}

@@ -2,10 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { CommandFactory } from 'nest-commander';
 import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  // 如果有命令行参数，使用CommandFactory运行命令
+  if (process.argv.length > 2) {
+    await CommandFactory.run(AppModule, {
+      logger: ['error', 'warn', 'log'],
+    });
+    return;
+  }
+
+  // 否则启动正常的Web服务器
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
   // 全局路由前缀

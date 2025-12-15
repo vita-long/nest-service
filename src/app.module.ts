@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 
 // Configs
 import { appConfig, databaseConfig, redisConfig } from './config';
@@ -18,6 +19,7 @@ import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { MemberModule } from './modules/member/member.module';
+import { jwtConfig } from './config';
 
 // Filters
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -27,9 +29,21 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [appConfig, databaseConfig, redisConfig],
+      load: [appConfig, databaseConfig, redisConfig, jwtConfig],
       isGlobal: true,
       cache: true,
+    }),
+    JwtModule.registerAsync({
+      global: true,
+      useFactory: async (configService: ConfigService) => {
+        return {
+          secret: configService.get('jwt.secret'),
+          signOptions: {
+            expiresIn: configService.get('jwt.expiresIn'),
+          },
+        };
+      },
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({

@@ -1,8 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { jwtConfig } from '@/config';
+import { ConfigService } from '@nestjs/config';
 import { RedisCacheService } from '../modules/cache/cache.service';
 
 export interface JwtPayload {
@@ -21,8 +20,7 @@ export class JwtAuthGuard implements CanActivate {
     private redisCacheService: RedisCacheService
   ) {}
 
-  // 使用forFeature注册配置
-  static imports = [ConfigModule.forFeature(jwtConfig)];
+
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();

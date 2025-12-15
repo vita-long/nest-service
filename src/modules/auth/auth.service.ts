@@ -8,6 +8,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoggerService } from '../../common/modules/logger/logger.service';
 import { RedisCacheService } from '../../common/modules/cache/cache.service';
 import * as bcrypt from 'bcrypt';
+import { MemberService } from '../member/member.service';
 
 export interface JwtPayload {
   userId: string;
@@ -37,6 +38,7 @@ export class AuthService {
     private configService: ConfigService,
     private loggerService: LoggerService,
     private redisCacheService: RedisCacheService,
+    private memberService: MemberService,
   ) {
     this.logger = loggerService.createLogger('AuthService');
   }
@@ -56,6 +58,9 @@ export class AuthService {
     const newUser = await this.userService.create(registerDto);
 
     this.logger.info('用户注册成功', { userId: newUser.userId, username: newUser.username });
+
+    // 创建会员信息
+    await this.memberService.createMemberInfo(newUser.userId);
     
     return {
       user: {

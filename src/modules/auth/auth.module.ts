@@ -6,18 +6,18 @@ import { User } from '@/entities/user.entity';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { jwtConfig } from '@/config';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RedisCacheModule } from '@/common/modules/cache/cache.module';
+import { MemberModule } from '../member/member.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
     UserModule,
     RedisCacheModule,
+    MemberModule,
+    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule.forFeature(jwtConfig)],
-      useFactory: (configService: ConfigService) => {
+      useFactory: (configService) => {
         const algorithm = configService.get('jwt.algorithm') || 'HS256';
         return {
           secret: configService.get('jwt.secret'),
@@ -35,6 +35,6 @@ import { RedisCacheModule } from '@/common/modules/cache/cache.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard],
-  exports: [JwtAuthGuard, JwtModule], // 导出JwtModule以便提供JwtService
+  exports: [JwtAuthGuard, JwtModule],
 })
 export class AuthModule {}
