@@ -1,0 +1,34 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '../auth/auth.module';
+import { RedisCacheModule } from '@/common/modules/cache/cache.module';
+
+import { MemberController } from './member.controller';
+import { MemberService } from './member.service';
+import { MemberLevel } from '../../entities/member-level.entity';
+import { MemberInfo } from '../../entities/member-info.entity';
+import { PointsHistory } from '../../entities/points-history.entity';
+import { GrowthValueHistory } from '../../entities/growth-value-history.entity';
+import { MemberSubscription } from '../../entities/member-subscription.entity';
+
+/**
+ * 会员模块
+ * 包含会员等级、会员信息、积分和成长值管理的所有组件
+ */
+@Module({
+  imports: [
+    AuthModule,
+    RedisCacheModule,
+    TypeOrmModule.forFeature([
+      MemberLevel,
+      MemberInfo,
+      PointsHistory,
+      GrowthValueHistory,
+      MemberSubscription,
+    ]),
+  ],
+  controllers: [MemberController],
+  providers: [MemberService],
+  exports: [MemberService], // 导出服务，以便其他模块可以使用
+})
+export class MemberModule {}

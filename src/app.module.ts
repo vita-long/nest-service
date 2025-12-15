@@ -16,8 +16,8 @@ import { RedisCacheModule } from './common/modules/cache/cache.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
-
 import { PaymentModule } from './modules/payment/payment.module';
+import { MemberModule } from './modules/member/member.module';
 
 // Filters
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -55,6 +55,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     ProductModule,
     OrderModule,
     PaymentModule,
+    MemberModule,
   ],
   controllers: [],
   providers: [
