@@ -6,6 +6,7 @@ import { CreateMemberLevelDto } from './dto/create-member-level.dto';
 import { UpdateMemberLevelDto } from './dto/update-member-level.dto';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { AdjustGrowthValueDto } from './dto/adjust-growth-value.dto';
+import { ActivateMemberDto } from './dto/activate-member.dto';
 
 /**
  * 会员控制器
@@ -58,9 +59,6 @@ export class MemberController {
     return this.memberService.deleteMemberLevel(+id);
   }
 
-  /**
-   * 开通会员
-   */
 
   /**
    * 获取所有会员信息（分页）
@@ -108,6 +106,18 @@ export class MemberController {
   @Post('growth-value/adjust')
   adjustGrowthValue(@Body() adjustGrowthValueDto: AdjustGrowthValueDto) {
     return this.memberService.adjustGrowthValue(adjustGrowthValueDto);
+  }
+
+  /**
+   * 调整会员状态
+   * @param userId 用户ID
+   * @param active 是否激活会员状态
+   * @returns 更新后的会员信息
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('status/activate')
+  activateMember(@Body() activateMemberDto: ActivateMemberDto) {
+    return this.memberService.activateMember(activateMemberDto);
   }
 
   /**

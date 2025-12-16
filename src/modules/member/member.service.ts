@@ -12,6 +12,7 @@ import { CreateMemberLevelDto } from './dto/create-member-level.dto';
 import { UpdateMemberLevelDto } from './dto/update-member-level.dto';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { AdjustGrowthValueDto } from './dto/adjust-growth-value.dto';
+import { ActivateMemberDto } from './dto/activate-member.dto';
 
 /**
  * 会员服务
@@ -386,6 +387,35 @@ export class MemberService {
     });
 
     return { data, total };
+  }
+
+  /**
+   * 调整会员状态
+   * @param activateMemberDto 调整会员状态的数据
+   * @returns 更新后的会员信息
+   */
+  async activateMember(activateMemberDto: ActivateMemberDto): Promise<MemberInfo> {
+    const { userId, active } = activateMemberDto;
+    const memberInfo = await this.getMemberInfoById(userId);
+
+    // 更新会员状态
+    memberInfo.subscriptionStatus = active;
+
+    // 如果是激活状态，确保有默认会员等级
+    if (active && !memberInfo.currentLevelId) {
+      const defaultLevel = await this.memberLevelRepository.findOne({
+        where: { code: 'bronze' },
+      });
+
+      if (defaultLevel) {
+        memberInfo.currentLevelId = defaultLevel.id;
+      }
+    }
+
+    // 保存变更
+    await this.memberInfoRepository.save(memberInfo);
+
+    return await this.getMemberInfoById(userId); // 返回更新后的完整信息
   }
 
   /**
