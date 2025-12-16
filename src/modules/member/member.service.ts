@@ -136,12 +136,14 @@ export class MemberService {
    */
   async getMemberInfo(page: number = 1, limit: number = 10): Promise<{ list: MemberInfo[]; total: number }> {
     const [data, total] = await this.memberInfoRepository.findAndCount({
-      relations: ['currentLevel'],
+      relations: ['currentLevel', 'user'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
-    console.log(data);
+    data.forEach(item => {
+      Reflect.deleteProperty(item.user, 'password');
+    })
     return { list: data, total };
   }
 

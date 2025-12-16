@@ -127,8 +127,6 @@ export class MemberController {
     );
   }
 
-
-
   /**
    * 订阅会员服务
    * @param req 请求对象，包含用户信息
