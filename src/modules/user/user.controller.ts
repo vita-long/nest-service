@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { GetCurrentUser } from '@/common/decorators/get-current-user.decorator';
 
 @Controller('users')
 export class UserController {
@@ -34,5 +35,28 @@ export class UserController {
   async removeUser(@Param('userId') userId: string) {
     await this.userService.remove(userId);
     return null;
+  }
+
+  /**
+   * 获取当前登录用户的个人信息
+   * @param user 当前登录用户信息
+   * @returns 用户个人信息
+   */
+  @Get('profile/me')
+  @UseGuards(JwtAuthGuard)
+  async getCurrentUserProfile(@GetCurrentUser() user) {
+    return this.userService.findById(user.userId);
+  }
+
+  /**
+   * 更新当前登录用户的个人信息
+   * @param user 当前登录用户信息
+   * @param updateUserDto 更新的用户信息
+   * @returns 更新后的用户信息
+   */
+  @Put('profile/me')
+  @UseGuards(JwtAuthGuard)
+  async updateCurrentUserProfile(@GetCurrentUser() user, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(user.userId, updateUserDto);
   }
 }

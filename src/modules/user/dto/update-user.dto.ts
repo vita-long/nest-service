@@ -1,4 +1,4 @@
-import { IsEmail, MinLength, IsOptional } from 'class-validator';
+import { IsEmail, MinLength, IsOptional, Length } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -21,4 +21,18 @@ export class UpdateUserDto {
 
   @IsOptional()
   lastLoginIp?: string;
+
+  @IsOptional()
+  @Length(1, 255, { message: 'Nickname must be between 1 and 255 characters' })
+  nickname?: string;
+
+  @IsOptional()
+  avatar?: string;
+
+  @IsOptional()
+  @Length(0, 500, { message: 'Bio must be less than 500 characters' })
+  bio?: string;
+
+  @IsOptional()
+  phone?: string;
 }
