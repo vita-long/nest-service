@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product } from '../../entities/product.entity';
+import { Product, ProductType } from '../../entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
@@ -38,8 +38,12 @@ export class ProductService {
     return this.productRepository.save(product);
   }
   // 查询所有商品（带分页）
-  async findAll(limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
+  async findAll(limit?: number, offset?: number, productType?: ProductType): Promise<{ list: Product[], total: number }> {
     const query = this.productRepository.createQueryBuilder('product');
+    
+    if (productType) {
+      query.where('product.productType = :productType', { productType });
+    }
     
     if (limit) {
       query.limit(limit);
@@ -210,6 +214,34 @@ export class ProductService {
     }
     
     const [items, totalCount] = await query.orderBy('product.stock', 'ASC').getManyAndCount();
+    
+    return { list: items, total: totalCount };
+  }
+
+  /**
+   * 查询积分商品
+   * @param isActive 是否只查询激活的商品
+   * @param limit 限制数量
+   * @param offset 偏移量
+   * @returns 积分商品列表和总数
+   */
+  async findPointsProducts(isActive?: boolean, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
+    const query = this.productRepository.createQueryBuilder('product')
+      .where('product.productType = :productType', { productType: ProductType.Points })
+      .leftJoinAndSelect('product.category', 'category');
+    
+    if (isActive !== undefined) {
+      query.andWhere('product.isActive = :isActive', { isActive });
+    }
+    
+    if (limit) {
+      query.limit(limit);
+    }
+    if (offset) {
+      query.offset(offset);
+    }
+    
+    const [items, totalCount] = await query.orderBy('product.createdAt', 'DESC').getManyAndCount();
     
     return { list: items, total: totalCount };
   }

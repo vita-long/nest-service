@@ -4,6 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { ProductType } from '@/entities/product.entity';
 
 @Controller('products')
 export class ProductController {
@@ -16,13 +17,14 @@ export class ProductController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
+    @Query('productType') productType?: ProductType
   ) {
     // 如果提供了limit和offset，优先使用它们；否则根据page和pageSize计算
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
     
-    const result = await this.productService.findAll(finalLimit, finalOffset);
+    const result = await this.productService.findAll(finalLimit, finalOffset, productType);
     
     return {
       list: result.list,
@@ -172,6 +174,28 @@ export class ProductController {
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
     
     const result = await this.productService.getLowStockProducts(threshold, finalLimit, finalOffset);
+    
+    return {
+      list: result.list,
+      total: result.total,
+      page: page,
+      pageSize: pageSize
+    };
+  }
+
+  // 获取积分商品列表（公开接口）
+  @Get('points')
+  async findPointsProducts(
+    @Query('isActive') isActive?: boolean,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number
+  ) {
+    const finalLimit = limit || pageSize;
+    const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
+    
+    const result = await this.productService.findPointsProducts(isActive, finalLimit, finalOffset);
     
     return {
       list: result.list,

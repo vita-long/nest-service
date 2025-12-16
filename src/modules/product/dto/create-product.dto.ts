@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, MaxLength, IsNumber, Min, IsBoolean, IsArray } from 'class-validator';
+import { IsNotEmpty, IsOptional, MaxLength, IsNumber, Min, IsBoolean, IsArray, IsEnum } from 'class-validator';
+import { ProductType } from '../../../entities/product.entity';
 
 export class CreateProductDto {
   @IsNotEmpty({ message: 'Product name is required' })
@@ -51,4 +52,13 @@ export class CreateProductDto {
 
   @IsNotEmpty({ message: 'Category ID is required' })
   categoryId: string;
+
+  @IsOptional()
+  @IsEnum(ProductType, { message: 'Invalid product type' })
+  productType?: ProductType;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Points price must be a number' })
+  @Min(0, { message: 'Points price cannot be negative' })
+  pointsPrice?: number;
 }

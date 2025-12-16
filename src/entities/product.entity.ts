@@ -1,6 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Category } from './category.entity';
 
+export enum ProductType {
+  Normal = 'normal',
+  Points = 'points',
+}
+
 /**
  * 产品实体类
  * 用于存储产品信息，包括基本信息、价格、库存等
@@ -126,4 +131,18 @@ export class Product {
   @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn({ name: 'category_id', referencedColumnName: 'categoryId' })
   category: Category;
+
+  /**
+   * 商品类型：普通商品 | 积分商品
+   * 后续可能扩展其他类型
+   */
+  @Column({ name: 'product_type', default: ProductType.Normal, comment: '商品类型' })
+  productType: ProductType;
+
+  /**
+   * 积分商品价格
+   * 积分商品的销售价格，用户需要积分才能购买
+   */
+  @Column({ name: 'points_price', type: 'int', nullable: true, comment: '积分商品价格' })
+  pointsPrice?: number;
 }
