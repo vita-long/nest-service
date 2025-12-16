@@ -45,12 +45,7 @@ export class MemberInfo {
   @JoinColumn({ name: 'current_level_id' })
   currentLevel: MemberLevel;
 
-  /**
-   * 成长值
-   * 用户当前的成长值，用于升级等级
-   */
-  @Column({ name: 'growth_value', type: 'int', default: 0, comment: '成长值' })
-  growthValue: number;
+
 
   /**
    * 积分

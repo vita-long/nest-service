@@ -6,12 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { MemberLevel } from '../../entities/member-level.entity';
 import { MemberInfo } from '../../entities/member-info.entity';
 import { PointsHistory } from '../../entities/points-history.entity';
-import { GrowthValueHistory } from '../../entities/growth-value-history.entity';
 import { MemberSubscription } from '../../entities/member-subscription.entity';
 import { CreateMemberLevelDto } from './dto/create-member-level.dto';
 import { UpdateMemberLevelDto } from './dto/update-member-level.dto';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
-import { AdjustGrowthValueDto } from './dto/adjust-growth-value.dto';
 import { ActivateMemberDto } from './dto/activate-member.dto';
 
 /**
@@ -24,7 +22,6 @@ export class MemberService {
     @InjectRepository(MemberLevel) private memberLevelRepository: Repository<MemberLevel>,
     @InjectRepository(MemberInfo) private memberInfoRepository: Repository<MemberInfo>,
     @InjectRepository(PointsHistory) private pointsHistoryRepository: Repository<PointsHistory>,
-    @InjectRepository(GrowthValueHistory) private growthValueHistoryRepository: Repository<GrowthValueHistory>,
     @InjectRepository(MemberSubscription) private memberSubscriptionRepository: Repository<MemberSubscription>,
   ) {}
 
@@ -193,8 +190,7 @@ export class MemberService {
     const memberInfo = this.memberInfoRepository.create({
       userId,
       currentLevelId: defaultLevel.id,
-      growthValue: 0,
-      points: 0,
+      points: 200,
       freeShippingTicketsBalance: defaultLevel.freeShippingTickets,
       freeBouquetUpgradesBalance: defaultLevel.freeBouquetUpgrades,
       subscriptionStatus: 'inactive',
@@ -245,45 +241,7 @@ export class MemberService {
     return memberInfo;
   }
 
-  /**
-   * 调整会员成长值
-   * @param adjustGrowthValueDto 调整成长值的数据
-   * @returns 更新后的会员信息
-   */
-  async adjustGrowthValue(adjustGrowthValueDto: AdjustGrowthValueDto): Promise<MemberInfo> {
-    const { userId, amount, type, reason } = adjustGrowthValueDto;
-    const memberInfo = await this.getMemberInfoById(userId);
 
-    // 计算调整后的成长值
-    let newGrowthValue;
-    if (type === 'increase') {
-      newGrowthValue = memberInfo.growthValue + amount;
-    } else {
-      newGrowthValue = Math.max(0, memberInfo.growthValue - amount); // 确保成长值不小于0
-    }
-
-    // 更新会员成长值
-    memberInfo.growthValue = newGrowthValue;
-
-    // 创建成长值历史记录
-    const growthValueHistory = this.growthValueHistoryRepository.create({
-      userId,
-      type,
-      reason,
-      amount,
-      previousGrowthValue: memberInfo.growthValue - (type === 'increase' ? amount : -amount),
-      currentGrowthValue: newGrowthValue,
-    });
-
-    // 保存变更
-    await this.memberInfoRepository.save(memberInfo);
-    await this.growthValueHistoryRepository.save(growthValueHistory);
-
-    // 检查是否需要自动升级会员等级
-    await this.checkAndUpgradeMemberLevel(memberInfo);
-
-    return await this.getMemberInfoById(userId); // 返回更新后的完整信息
-  }
 
   /**
    * 订阅会员服务
@@ -323,13 +281,7 @@ export class MemberService {
     await this.memberSubscriptionRepository.save(subscription);
     await this.memberInfoRepository.save(memberInfo);
 
-    // 增加订阅成长值
-    await this.adjustGrowthValue({
-      userId,
-      amount: memberInfo.currentLevelId === levelId ? 50 : 200, // 首次订阅200点，续订50点
-      type: 'increase',
-      reason: memberInfo.currentLevelId === levelId ? '会员续订奖励' : '会员订阅奖励',
-    });
+
 
     return subscription;
   }
@@ -352,23 +304,7 @@ export class MemberService {
     return { data, total };
   }
 
-  /**
-   * 获取成长值历史记录
-   * @param userId 用户ID
-   * @param page 页码
-   * @param limit 每页数量
-   * @returns 成长值历史记录列表和总数
-   */
-  async getGrowthValueHistory(userId: string, page: number = 1, limit: number = 10): Promise<{ data: GrowthValueHistory[]; total: number }> {
-    const [data, total] = await this.growthValueHistoryRepository.findAndCount({
-      where: { userId },
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
 
-    return { data, total };
-  }
 
   /**
    * 获取会员订阅记录
@@ -402,7 +338,7 @@ export class MemberService {
     memberInfo.subscriptionStatus = active;
 
     // 如果是激活状态，确保有默认会员等级
-    if (active && !memberInfo.currentLevelId) {
+    if (active === 'active' && !memberInfo.currentLevelId) {
       const defaultLevel = await this.memberLevelRepository.findOne({
         where: { code: 'bronze' },
       });
@@ -418,31 +354,5 @@ export class MemberService {
     return await this.getMemberInfoById(userId); // 返回更新后的完整信息
   }
 
-  /**
-   * 检查并升级会员等级
-   * @param memberInfo 会员信息
-   */
-  private async checkAndUpgradeMemberLevel(memberInfo: MemberInfo): Promise<void> {
-    // 根据成长值获取可升级的最高等级
-    const levels = await this.memberLevelRepository.find({
-      where: { isActive: true },
-      order: { discountRate: 'ASC' }, // 按折扣率从高到低排序（折扣率越低，等级越高）
-    });
 
-    // 找到会员可以升级到的最高等级
-    let targetLevel = memberInfo.currentLevel;
-    for (const level of levels) {
-      // 这里可以根据实际需求设置成长值与等级的对应规则
-      // 简单起见，假设等级按折扣率从低到高排列，折扣率越低，等级越高
-      if (level.discountRate < targetLevel.discountRate) {
-        targetLevel = level;
-      }
-    }
-
-    // 如果可以升级，更新会员等级
-    if (targetLevel.id !== memberInfo.currentLevelId) {
-      memberInfo.currentLevelId = targetLevel.id;
-      await this.memberInfoRepository.save(memberInfo);
-    }
-  }
 }

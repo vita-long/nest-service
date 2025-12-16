@@ -5,7 +5,6 @@ import { MemberService } from './member.service';
 import { CreateMemberLevelDto } from './dto/create-member-level.dto';
 import { UpdateMemberLevelDto } from './dto/update-member-level.dto';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
-import { AdjustGrowthValueDto } from './dto/adjust-growth-value.dto';
 import { ActivateMemberDto } from './dto/activate-member.dto';
 
 /**
@@ -97,16 +96,7 @@ export class MemberController {
     return this.memberService.adjustPoints(adjustPointsDto);
   }
 
-  /**
-   * 调整会员成长值
-   * @param adjustGrowthValueDto 调整成长值的数据
-   * @returns 更新后的会员信息
-   */
-  @UseGuards(JwtAuthGuard)
-  @Post('growth-value/adjust')
-  adjustGrowthValue(@Body() adjustGrowthValueDto: AdjustGrowthValueDto) {
-    return this.memberService.adjustGrowthValue(adjustGrowthValueDto);
-  }
+
 
   /**
    * 调整会员状态
@@ -137,22 +127,7 @@ export class MemberController {
     );
   }
 
-  /**
-   * 获取当前用户的成长值历史记录
-   * @param req 请求对象，包含用户信息
-   * @param page 页码
-   * @param limit 每页数量
-   * @returns 成长值历史记录列表和总数
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get('growth-value/history')
-  getGrowthValueHistory(@Request() req, @Query('page') page: string, @Query('limit') limit: string) {
-    return this.memberService.getGrowthValueHistory(
-      req.user.userId,
-      page ? +page : 1,
-      limit ? +limit : 10,
-    );
-  }
+
 
   /**
    * 订阅会员服务

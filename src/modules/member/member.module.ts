@@ -9,7 +9,6 @@ import { SeedMemberLevelsCommand } from './commands/seed-member-levels.command';
 import { MemberLevel } from '../../entities/member-level.entity';
 import { MemberInfo } from '../../entities/member-info.entity';
 import { PointsHistory } from '../../entities/points-history.entity';
-import { GrowthValueHistory } from '../../entities/growth-value-history.entity';
 import { MemberSubscription } from '../../entities/member-subscription.entity';
 
 /**
@@ -23,7 +22,6 @@ import { MemberSubscription } from '../../entities/member-subscription.entity';
       MemberLevel,
       MemberInfo,
       PointsHistory,
-      GrowthValueHistory,
       MemberSubscription
     ]),
   ],
