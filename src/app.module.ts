@@ -19,6 +19,7 @@ import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { MemberModule } from './modules/member/member.module';
+import { CouponModule } from './modules/coupon/coupon.module';
 import { jwtConfig } from './config';
 
 // Filters
@@ -70,6 +71,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     OrderModule,
     PaymentModule,
     MemberModule,
+    CouponModule,
   ],
   controllers: [],
   providers: [
