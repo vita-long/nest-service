@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, MaxLength, IsEnum, IsNumber, Min, IsDate, IsJSON, IsArray, ArrayUnique } from 'class-validator';
-import { CouponType, CouponSource } from '@/entities/coupons.entity';
+import { CouponType, CouponSource, CouponStatus } from '@/entities/coupons.entity';
 
 /**
  * 创建优惠券DTO
@@ -19,10 +19,23 @@ export class CreateCouponDto {
   @IsEnum(CouponType, { message: '无效的优惠券类型' })
   type: CouponType;
 
+  @IsOptional()
   @IsNotEmpty({ message: '优惠券价值不能为空' })
   @IsNumber({}, { message: '优惠券价值必须是数字' })
   @Min(0, { message: '优惠券价值不能为负数' })
-  value: number;
+  value?: number;
+
+  /**
+   * 折扣
+   * 优惠券的折扣
+   * 选择折扣劵时生效，例如9.5折对应的折扣为0.95
+   */
+  @IsOptional()
+  @IsNumber({}, { message: '折扣必须是数字' })
+  @Min(0, { message: '折扣不能为负数' })
+  discount?: number;
+
+
 
   @IsNotEmpty({ message: '开始时间不能为空' })
   @IsDate({ message: '无效的开始时间格式' })
@@ -58,4 +71,24 @@ export class CreateCouponDto {
   @IsOptional()
   @MaxLength(255, { message: '优惠券描述不能超过255个字符' })
   description?: string;
+}
+
+export class FindCouponDto {
+  @IsOptional()
+  code?: string;
+
+  @IsOptional()
+  name?: string;
+
+  @IsOptional()
+  limit?: number;
+  
+  @IsOptional()
+  offset?: number;
+
+  @IsOptional()
+  status?: CouponStatus;
+
+  @IsOptional()
+  type?: CouponType;
 }

@@ -1,4 +1,4 @@
-import { IsOptional, MaxLength, IsEnum, IsNumber, Min, IsDate, IsJSON, IsArray, ArrayUnique } from 'class-validator';
+import { IsOptional, MaxLength, IsEnum, IsNumber, Min, IsDate, IsJSON, IsArray, ArrayUnique, IsEmpty } from 'class-validator';
 import { CouponType, CouponSource, CouponStatus } from '../../../entities/coupons.entity';
 
 /**
@@ -7,7 +7,6 @@ import { CouponType, CouponSource, CouponStatus } from '../../../entities/coupon
  */
 export class UpdateCouponDto {
   @IsOptional()
-  @MaxLength(50, { message: '优惠券代码不能超过50个字符' })
   code?: string;
 
   @IsOptional()
@@ -22,6 +21,11 @@ export class UpdateCouponDto {
   @IsNumber({}, { message: '优惠券价值必须是数字' })
   @Min(0, { message: '优惠券价值不能为负数' })
   value?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: '优惠券折扣必须是数字' })
+  @Min(0, { message: '优惠券折扣不能为负数' })
+  discount?: number;
 
   @IsOptional()
   @IsDate({ message: '无效的开始时间格式' })
@@ -61,4 +65,8 @@ export class UpdateCouponDto {
   @IsOptional()
   @IsEnum(CouponSource, { message: '无效的优惠券来源' })
   source?: CouponSource;
+
+  @IsOptional()
+  @MaxLength(255, { message: '优惠券描述不能超过255个字符' })
+  description?: string;
 }

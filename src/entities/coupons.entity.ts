@@ -68,8 +68,16 @@ export class Coupon {
    * 面值
    * 优惠券的价值，根据类型不同有不同含义
    */
-  @Column({ name: 'value', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '面值' })
-  value: number;
+  @Column({ name: 'value', type: 'decimal', precision: 10, scale: 2, nullable: true, comment: '面值' })
+  value?: number;
+
+  /**
+   * 折扣
+   * 优惠券的折扣
+   * 选择折扣劵时生效，例如9.5折对应的折扣为0.95
+   */
+  @Column({ name: 'discount', type: 'decimal', precision: 5, scale: 2, nullable: true, comment: '折扣' })
+  discount?: number;
 
   /**
    * 生效时间

@@ -43,13 +43,22 @@ export class CouponController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
     @Query('status') status?: CouponStatus,
-    @Query('type') type?: CouponType
+    @Query('type') type?: CouponType,
+    @Query('code') code?: string,
+    @Query('name') name?: string
   ) {
     // 如果提供了limit和offset，优先使用它们；否则根据page和pageSize计算
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
     
-    const result = await this.couponService.findAll(finalLimit, finalOffset, status, type);
+    const result = await this.couponService.findAll({
+      limit: finalLimit,
+      offset: finalOffset,
+      status,
+      type,
+      code,
+      name
+    });
     
     return {
       list: result.list,

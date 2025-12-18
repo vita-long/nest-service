@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import { Coupon, CouponStatus, CouponType } from '../../entities/coupons.entity';
-import { CreateCouponDto } from './dto/create-coupon.dto';
+import { CreateCouponDto, FindCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { IssueCouponDto } from './dto/issue-coupon.dto';
 import { nanoid } from 'nanoid';
@@ -79,7 +79,9 @@ export class CouponService {
    * @param type 优惠券类型
    * @returns 优惠券列表和总数
    */
-  async findAll(limit?: number, offset?: number, status?: CouponStatus, type?: CouponType): Promise<{ list: Coupon[], total: number }> {
+  async findAll(findCouponDto: FindCouponDto): Promise<{ list: Coupon[], total: number }> {
+    const { limit, offset, status, type, name, code } = findCouponDto;
+
     const query = this.couponRepository.createQueryBuilder('coupon');
 
     // 默认过滤掉已删除的优惠券
@@ -93,6 +95,14 @@ export class CouponService {
     // 添加类型过滤
     if (type) {
       query.andWhere('coupon.type = :type', { type });
+    }
+
+    if (code) {
+      query.andWhere('coupon.code = :code', { code });
+    }
+
+    if (name) {
+      query.andWhere('coupon.name LIKE :name', { name: `%${name}%` });
     }
 
     // 添加分页
