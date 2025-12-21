@@ -192,7 +192,7 @@ export class MemberService {
     const memberInfo = this.memberInfoRepository.create({
       userId,
       currentLevelId: defaultLevel.id,
-      points: 200,
+      points: 0,
       freeShippingTicketsBalance: defaultLevel.freeShippingTickets,
       freeBouquetUpgradesBalance: defaultLevel.freeBouquetUpgrades,
       subscriptionStatus: 'inactive',

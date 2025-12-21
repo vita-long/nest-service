@@ -1,14 +1,17 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { User } from '../../entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { WechatLoginDto } from './dto/wechat-login.dto';
 import { LoggerService } from '../../common/modules/logger/logger.service';
 import { RedisCacheService } from '../../common/modules/cache/cache.service';
 import * as bcrypt from 'bcrypt';
 import { MemberService } from '../member/member.service';
+import axios from 'axios';
+import { nanoid } from 'nanoid';
 
 export interface JwtPayload {
   userId: string;
@@ -19,6 +22,74 @@ export interface JwtPayload {
 export interface RefreshTokenPayload {
   userId: string;
   tokenId?: string;
+}
+
+/**
+ * 微信登录会话信息
+ */
+export interface WechatSessionInfo {
+  /**
+   * 微信用户唯一标识
+   */
+  openid: string;
+  /**
+   * 会话密钥
+   */
+  session_key: string;
+  /**
+   * 用户在开放平台的唯一标识符
+   */
+  unionid?: string;
+  /**
+   * 错误码
+   */
+  errcode?: number;
+  /**
+   * 错误信息
+   */
+  errmsg?: string;
+}
+
+/**
+ * 微信用户信息
+ */
+export interface WechatUserInfo {
+  /**
+   * 微信用户唯一标识
+   */
+  openid: string;
+  /**
+   * 用户昵称
+   */
+  nickname?: string;
+  /**
+   * 用户性别（1-男性，2-女性，0-未知）
+   */
+  sex?: number;
+  /**
+   * 用户所在城市
+   */
+  city?: string;
+  /**
+   * 用户所在省份
+   */
+  province?: string;
+  /**
+   * 用户所在国家
+   */
+  country?: string;
+  /**
+   * 用户头像URL
+   */
+  headimgurl?: string;
+  /**
+   * 用户特权信息列表
+   */
+  privilege?: string[];
+  /**
+   * 用户在开放平台的唯一标识符
+   */
+  unionid?: string;
 }
 
 // 缓存键前缀常量
@@ -84,7 +155,7 @@ export class AuthService {
     }
 
     // 验证密码
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password as string);
     if (!isPasswordValid) {
       this.logger.warn('密码验证失败', { username });
       throw new UnauthorizedException('Invalid credentials');
@@ -311,6 +382,149 @@ export class AuthService {
     } catch (error) {
       this.logger.error('刷新令牌失败', { error: error.message });
       throw new UnauthorizedException('无效或过期的刷新令牌');
+    }
+  }
+
+  /**
+   * 微信登录
+   * @param wechatLoginDto 微信登录参数
+   * @param ip 用户IP地址
+   * @returns 登录结果（用户信息、访问令牌、刷新令牌）
+   */
+  async wechatLogin(wechatLoginDto: WechatLoginDto, ipAddress?: string): Promise<{
+    user: Omit<User, 'password'>;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    const { code } = wechatLoginDto;
+    this.logger.info('微信登录请求', { code: code.substring(0, 10) + '...', ipAddress });
+
+    try {
+      // 获取微信配置
+      const wechatAppId = this.configService.get('wechat.appId');
+      const wechatAppSecret = this.configService.get('wechat.appSecret');
+      const wechatAuthUrl = this.configService.get('wechat.authUrl');
+
+      // 调用微信API获取会话信息
+      const response = await axios.get<WechatSessionInfo>(wechatAuthUrl, {
+        params: {
+          appid: wechatAppId,
+          secret: wechatAppSecret,
+          js_code: code,
+          grant_type: 'authorization_code',
+        },
+      });
+      const sessionInfo = response.data;
+
+      // 处理微信API错误
+      if (sessionInfo.errcode) {
+        this.logger.error('微信登录API调用失败', {
+          errcode: sessionInfo.errcode,
+          errmsg: sessionInfo.errmsg,
+        });
+        throw new BadRequestException('微信登录失败，请重试');
+      }
+
+      const { openid } = sessionInfo;
+      this.logger.info('微信登录获取openid成功', { openid, ipAddress });
+
+      // 查找或创建用户
+      let user = await this.userService.findOneByOpenId(openid);
+
+      if (!user) {
+        // 创建新用户
+        const username = `wx_${openid.substring(0, 10)}_${nanoid(4)}`;
+        const password = '123456P'; // 默认密码
+
+        user = await this.userService.create({
+          username,
+          password,
+          openid: openid,
+          email: `${username}@wechat.com`,
+          role: 'wx_user',
+          status: true,
+          avatar: wechatLoginDto.avatar,
+          nickname: wechatLoginDto.nickname,
+        });
+
+        // 创建会员信息
+        await this.memberService.createMemberInfo(user.userId);
+
+        this.logger.info('微信登录创建新用户成功', { userId: user.userId, openid });
+      }
+
+      // 更新用户登录信息
+      const updatedUser = await this.userService.update(user.userId, {
+        status: true,
+        avatar: wechatLoginDto.avatar,
+        nickname: wechatLoginDto.nickname,
+        lastLoginTime: new Date(),
+        lastLoginIp: ipAddress,
+      });
+
+      user = updatedUser as User;
+
+      // 检查用户是否已有活跃令牌，如果有则使其失效
+      const existingTokenKey = `user:${user.userId}:tokens`;
+      const existingTokens = await this.redisCacheService.get<string[]>(existingTokenKey);
+
+      if (existingTokens && Array.isArray(existingTokens) && existingTokens.length > 0) {
+        // 使所有现有令牌失效
+        for (const tokenId of existingTokens) {
+          await this.redisCacheService.delete(tokenId, CACHE_PREFIX.ACCESS_TOKEN);
+          await this.redisCacheService.delete(tokenId, CACHE_PREFIX.REFRESH_TOKEN);
+        }
+        // 清空用户令牌列表
+        await this.redisCacheService.delete(existingTokenKey);
+      }
+
+      // 获取令牌过期时间（秒）
+      const accessTokenExpiresIn = parseInt(this.configService.get('jwt.expiresIn', '7200'), 10);
+      const refreshTokenExpiresIn = parseInt(this.configService.get('jwt.refreshTokenExpiresIn', '25200'), 10);
+
+      // 生成令牌
+      const tokens = this.generateTokens(user, accessTokenExpiresIn, refreshTokenExpiresIn);
+
+      // 生成唯一的tokenId
+      const tokenId = `${user.userId}:${Date.now()}:${nanoid(7)}`;
+
+      // 存储令牌到Redis
+      await this.redisCacheService.set(
+        tokenId,
+        { userId: user.userId, accessToken: tokens.accessToken },
+        accessTokenExpiresIn,
+        CACHE_PREFIX.ACCESS_TOKEN
+      );
+
+      await this.redisCacheService.set(
+        tokenId,
+        { userId: user.userId, refreshToken: tokens.refreshToken },
+        refreshTokenExpiresIn,
+        CACHE_PREFIX.REFRESH_TOKEN
+      );
+
+      // 存储用户的活跃令牌ID列表
+      const tokenIds: string[] = [tokenId];
+      await this.redisCacheService.set(
+        existingTokenKey,
+        tokenIds,
+        refreshTokenExpiresIn
+      );
+
+      this.logger.info('微信登录成功', { userId: user.userId, openid, ipAddress });
+      console.log(user);
+      const { password, ...otherUserInfo } = user;
+      return {
+        user: otherUserInfo,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      };
+    } catch (error) {
+      this.logger.error('微信登录失败', { error: error.message });
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new UnauthorizedException('微信登录失败，请检查网络或重试');
     }
   }
 }

@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh.dto';
+import { WechatLoginDto } from './dto/wechat-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -41,7 +42,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async logout(@Request() req) {
     await this.authService.logout(req.user.userId);
-    return { message: '退出登录成功' };
+    return { isLogout: true, message: '退出登录成功' };
   }
 
   /**
@@ -58,5 +59,18 @@ export class AuthController {
       user,
       timestamp: new Date().getTime()
     };
+  }
+
+  /**
+   * 微信登录
+   * @param wechatLoginDto 微信登录参数
+   * @param ip 用户IP地址
+   * @returns 返回登录结果
+   */
+  @Post('wx-login')
+  @HttpCode(HttpStatus.OK)
+  async wechatLogin(@Body() wechatLoginDto: WechatLoginDto, @Ip() ip: string) {
+    const result = await this.authService.wechatLogin(wechatLoginDto, ip);
+    return result;
   }
 }

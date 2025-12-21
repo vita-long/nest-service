@@ -79,4 +79,9 @@ export class UserService {
   async findOneByUsername(username: string): Promise<User | null> {
     return this.userRepository.findOneBy({ username });
   }
+
+  // Add method for wechat login to find user by openid
+  async findOneByOpenId(openid: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ openid });
+  }
 }

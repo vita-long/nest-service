@@ -5,7 +5,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 
 // Configs
-import { appConfig, databaseConfig, redisConfig } from './config';
+import { appConfig, databaseConfig, redisConfig, wechatConfig } from './config';
 
 // Modules
 import { AuthModule } from './modules/auth/auth.module';
@@ -30,7 +30,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [appConfig, databaseConfig, redisConfig, jwtConfig],
+      load: [appConfig, databaseConfig, redisConfig, jwtConfig, wechatConfig],
       isGlobal: true,
       cache: true,
     }),
