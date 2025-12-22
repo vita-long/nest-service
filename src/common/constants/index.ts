@@ -1,8 +1,8 @@
 export const MemberLevelConstants = {
   /**
-   * 青铜会员
+   * 普通会员
    */
-  BRONZE: 'bronze',
+  NORMAL: 'normal',
 
   /**
    * 白银会员
@@ -18,4 +18,4 @@ export const MemberLevelConstants = {
    * 钻石会员
    */
   DIAMOND: 'diamond',
-}
+} as const;

@@ -40,10 +40,10 @@ export class MemberLevel {
   validityPeriod: number;
 
   /**
-   * 折扣率
-   * 该等级会员享受的折扣率，如0.95表示9.5折
+   * 折扣
+   * 该等级会员享受的折扣，如0.95表示9.5折
    */
-  @Column({ name: 'discount_rate', type: 'decimal', precision: 3, scale: 2, default: 1.0, comment: '折扣率' })
+  @Column({ name: 'discount_rate', type: 'decimal', precision: 3, scale: 2, default: 1.0, comment: '折扣' })
   discountRate: number;
 
   /**
@@ -76,9 +76,9 @@ export class MemberLevel {
 
   /**
    * 订阅折扣
-   * 订阅服务时享受的折扣率
+   * 订阅服务时享受的折扣
    */
-  @Column({ name: 'subscription_discount', type: 'decimal', precision: 3, scale: 2, default: 1.0, comment: '订阅折扣率' })
+  @Column({ name: 'subscription_discount', type: 'decimal', precision: 3, scale: 2, default: 1.0, comment: '订阅折扣' })
   subscriptionDiscount: number;
 
   /**

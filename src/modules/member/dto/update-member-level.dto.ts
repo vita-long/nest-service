@@ -39,7 +39,7 @@ export class UpdateMemberLevelDto {
    */
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @Min(0)
   validityPeriod?: number;
 
   /**
@@ -47,7 +47,7 @@ export class UpdateMemberLevelDto {
    */
   @IsOptional()
   @IsNumber()
-  @Min(0.01)
+  @Min(0)
   discountRate?: number;
 
   /**

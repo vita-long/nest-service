@@ -28,17 +28,17 @@ export class MemberLevelSeed {
     // 会员等级初始数据
     const memberLevels = [
       {
-        name: '青铜会员',
-        code: MemberLevelConstants.BRONZE,
+        name: '普通会员',
+        code: MemberLevelConstants.NORMAL,
         subscriptionPrice: 0,
-        subscriptionDiscount: 1.0,
+        subscriptionDiscount: 0,
         validityPeriod: 0,
-        discountRate: 0.98,
+        discountRate: 1,
         freeShippingTickets: 1,
         unlimitedFreeShipping: false,
         freeBouquetUpgrades: 0,
         holidayGifts: false,
-        description: '青铜会员，享受基本会员权益',
+        description: '普通会员，不享受权益',
         isActive: true,
       },
       {

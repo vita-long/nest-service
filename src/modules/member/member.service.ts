@@ -11,6 +11,7 @@ import { CreateMemberLevelDto } from './dto/create-member-level.dto';
 import { UpdateMemberLevelDto } from './dto/update-member-level.dto';
 import { AdjustPointsDto } from './dto/adjust-points.dto';
 import { ActivateMemberDto } from './dto/activate-member.dto';
+import { MemberLevelConstants } from '@/common/constants';
 
 /**
  * 会员服务
@@ -182,7 +183,7 @@ export class MemberService {
 
     // 获取默认会员等级
     const defaultLevel = await this.memberLevelRepository.findOne({
-      where: { code: 'bronze' },
+      where: { code: MemberLevelConstants.NORMAL },
     });
 
     if (!defaultLevel) {
@@ -342,7 +343,7 @@ export class MemberService {
     // 如果是激活状态，确保有默认会员等级
     if (active === 'active' && !memberInfo.currentLevelId) {
       const defaultLevel = await this.memberLevelRepository.findOne({
-        where: { code: 'bronze' },
+        where: { code: MemberLevelConstants.NORMAL },
       });
 
       if (defaultLevel) {

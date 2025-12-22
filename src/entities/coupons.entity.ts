@@ -4,6 +4,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
  * 优惠券类型枚举
  */
 export enum CouponType {
+  FULL_REDUCTION = 'full_reduction', // 满减券
   DISCOUNT = 'discount',          // 折扣券
   SHIPPING_FREE = 'shipping_free', // 免运费券
   FIXED_AMOUNT = 'fixed_amount' // 固定金额券
