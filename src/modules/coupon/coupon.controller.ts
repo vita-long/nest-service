@@ -4,6 +4,7 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { IssueCouponDto } from './dto/issue-coupon.dto';
 import { CouponStatus, CouponType } from '../../entities/coupons.entity';
+import { CouponUseStatus } from '../../entities/coupon_receive_records.entity';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 /**
@@ -125,5 +126,20 @@ export class CouponController {
   @UseGuards(JwtAuthGuard)
   async issueCoupon(@Body() issueCouponDto: IssueCouponDto) {
     return this.couponService.issueCoupon(issueCouponDto);
+  }
+
+  /**
+   * 查询用户领取的优惠券（需要认证）
+   * @param userId 用户ID
+   * @param status 优惠券使用状态（可选）
+   * @returns 用户领取的优惠券列表
+   */
+  @Get('user/list')
+  @UseGuards(JwtAuthGuard)
+  async findUserCoupons(
+    @Query('userId') userId: number,
+    @Query('status') status?: CouponUseStatus
+  ) {
+    return this.couponService.findUserCoupons(userId, status);
   }
 }

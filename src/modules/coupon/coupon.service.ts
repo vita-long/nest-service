@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import { Coupon, CouponStatus, CouponType } from '../../entities/coupons.entity';
+import { CouponReceiveRecord, CouponUseStatus } from '../../entities/coupon_receive_records.entity';
 import { CreateCouponDto, FindCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { IssueCouponDto } from './dto/issue-coupon.dto';
@@ -14,7 +15,8 @@ import { nanoid } from 'nanoid';
 @Injectable()
 export class CouponService {
   constructor(
-    @InjectRepository(Coupon) private couponRepository: Repository<Coupon>
+    @InjectRepository(Coupon) private couponRepository: Repository<Coupon>,
+    @InjectRepository(CouponReceiveRecord) private couponReceiveRecordRepository: Repository<CouponReceiveRecord>
   ) {}
 
   /**
@@ -228,15 +230,56 @@ export class CouponService {
       throw new BadRequestException('优惠券数量不足');
     }
 
-    // 这里应该添加发放优惠券的逻辑，比如记录用户领取记录
-    // 由于用户没有要求实现优惠券领取记录，所以这里只更新剩余数量
+    // 创建优惠券领取记录
+    const receiveRecords: CouponReceiveRecord[] = [];
+    const nowDate = new Date();
+    
+    for (let i = 0; i < issueCouponDto.quantity; i++) {
+      // 为每个领取的优惠券生成记录
+      const receiveRecord = this.couponReceiveRecordRepository.create({
+        userId: parseInt(issueCouponDto.userId, 10), // 将string类型的userId转换为number
+        couponId: coupon.id,
+        couponCode: coupon.code,
+        receiveTime: nowDate,
+        status: CouponUseStatus.UNUSED
+      });
+      receiveRecords.push(receiveRecord);
+    }
 
-    // 更新剩余数量
+    // 保存领取记录
+    await this.couponReceiveRecordRepository.save(receiveRecords);
+
+    // 更新优惠券剩余数量
     await this.couponRepository.update(issueCouponDto.couponId, {
       remainingQuantity: coupon.remainingQuantity - issueCouponDto.quantity
     });
 
     return { success: true, message: '优惠券发放成功' };
+  }
+
+  /**
+   * 查询用户领取的优惠券
+   * @param userId 用户ID
+   * @param status 优惠券使用状态（可选）
+   * @returns 用户领取的优惠券列表
+   */
+  async findUserCoupons(userId: number, status?: CouponUseStatus): Promise<CouponReceiveRecord[]> {
+    const query = this.couponReceiveRecordRepository.createQueryBuilder('record');
+
+    // 关联查询优惠券信息
+    query.leftJoinAndSelect('record.coupon', 'coupon');
+    // 根据用户ID过滤
+    query.where('record.userId = :userId', { userId });
+
+    // 根据使用状态过滤（可选）
+    if (status) {
+      query.andWhere('record.status = :status', { status });
+    }
+
+    // 按领取时间倒序排列
+    query.orderBy('record.receiveTime', 'DESC');
+
+    return query.getMany();
   }
 
   /**

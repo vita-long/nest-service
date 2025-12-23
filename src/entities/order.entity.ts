@@ -62,12 +62,12 @@ export class Order {
    */
   @Column({ name: 'shipping_address', type: 'json', nullable: true, comment: '收货地址' })
   shippingAddress?: {
-    name: string;
-    phone: string;
-    province: string;
-    city: string;
-    district: string;
-    address: string;
+    name: string; // 收货人
+    phone: string; // 收货人手机号
+    province: string; // 省份
+    city: string; // 城市
+    district: string; // 区县
+    address: string; // 详细地址
   };
 
   /**

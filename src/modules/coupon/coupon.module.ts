@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Coupon } from '../../entities/coupons.entity';
+import { CouponReceiveRecord } from '../../entities/coupon_receive_records.entity';
 import { CouponService } from './coupon.service';
 import { CouponController } from './coupon.controller';
 import { RedisCacheModule } from '../../common/modules/cache/cache.module';
@@ -10,7 +11,7 @@ import { RedisCacheModule } from '../../common/modules/cache/cache.module';
  * 注册优惠券相关的实体、服务和控制器
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Coupon]), RedisCacheModule],
+  imports: [TypeOrmModule.forFeature([Coupon, CouponReceiveRecord]), RedisCacheModule],
   controllers: [CouponController],
   providers: [CouponService],
   exports: [CouponService]

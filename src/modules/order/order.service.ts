@@ -15,7 +15,7 @@ export class OrderService {
     const machineId = process.env.MACHINE_ID || '0';
     const timestamp = Date.now();
     const randomId = uuidv7();
-    return `${machineId}ord_${timestamp}_${randomId}`;
+    return `${machineId}_${timestamp}_${randomId}`;
   }
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
