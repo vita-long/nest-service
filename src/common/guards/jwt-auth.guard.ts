@@ -45,32 +45,39 @@ export class JwtAuthGuard implements CanActivate {
 
       console.log(payload);
       
-      // 验证令牌是否在Redis中存在（通过用户ID查找所有活跃令牌）
       const userId = payload.userId;
-      const userTokenKey = `user:${userId}:tokens`;
-      const userTokens = await this.redisCacheService.get<string[]>(userTokenKey);
       
-      if (!userTokens || userTokens.length === 0) {
-        this.logger.warn('Token validation failed: No active tokens found for user', { userId });
-        throw new UnauthorizedException('Token has been invalidated');
-      }
-      // 检查令牌是否在Redis中有效
-      let tokenFound = false;
-      for (const tokenId of userTokens) {
-        const storedTokenData = await this.redisCacheService.get<any>(
-          tokenId, 
-          'access_token'
-        );
+      try {
+        // 验证令牌是否在Redis中存在（通过用户ID查找所有活跃令牌）
+        const userTokenKey = `user:${userId}:tokens`;
+        const userTokens = await this.redisCacheService.get<string[]>(userTokenKey);
         
-        if (storedTokenData && storedTokenData.accessToken === token) {
-          tokenFound = true;
-          break;
+        if (userTokens && userTokens.length > 0) {
+          // 检查令牌是否在Redis中有效
+          let tokenFound = false;
+          for (const tokenId of userTokens) {
+            const storedTokenData = await this.redisCacheService.get<any>(
+              tokenId, 
+              'access_token'
+            );
+            
+            if (storedTokenData && storedTokenData.accessToken === token) {
+              tokenFound = true;
+              break;
+            }
+          }
+          
+          if (!tokenFound) {
+            this.logger.warn('Token validation failed: Token not found in Redis', { userId });
+            throw new UnauthorizedException('Token has been invalidated');
+          }
+        } else if (userTokens !== null) { // 如果userTokens为null，说明Redis连接失败，跳过验证
+          this.logger.warn('Token validation failed: No active tokens found for user', { userId });
+          throw new UnauthorizedException('Token has been invalidated');
         }
-      }
-      
-      if (!tokenFound) {
-        this.logger.warn('Token validation failed: Token not found in Redis', { userId });
-        throw new UnauthorizedException('Token has been invalidated');
+      } catch (redisError) {
+        // Redis连接失败，跳过Redis验证，只依赖JWT验证
+        this.logger.warn('Redis validation skipped due to connection error: ' + redisError.message);
       }
       
       request.user = payload;

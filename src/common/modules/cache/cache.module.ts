@@ -25,10 +25,10 @@ export class RedisCacheModule implements OnModuleInit {
       if (isConnected) {
         this.logger.log('Redis connection established successfully');
       } else {
-        this.logger.error('Failed to establish Redis connection');
+        this.logger.warn('Failed to establish Redis connection - cache functionality will be disabled');
       }
     } catch (error) {
-      this.logger.error(`Error during Redis initialization: ${error.message}`, error.stack);
+      this.logger.warn(`Error during Redis initialization: ${error.message} - cache functionality will be disabled`);
     }
   }
 }

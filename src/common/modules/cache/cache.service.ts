@@ -11,7 +11,7 @@ export class RedisCacheService {
   private isConnected = false;
 
   constructor(private configService: ConfigService) {
-    this.initializeClient();
+    // 不在构造函数中进行异步操作
   }
 
   /**
@@ -50,6 +50,13 @@ export class RedisCacheService {
     } catch (error) {
       this.logger.error(`Failed to initialize Redis client: ${error.message}`, error.stack);
     }
+  }
+
+  /**
+   * 在模块初始化时初始化Redis客户端
+   */
+  async onModuleInit() {
+    await this.initializeClient();
   }
 
   /**
