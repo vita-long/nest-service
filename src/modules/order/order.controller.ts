@@ -26,12 +26,13 @@ export class OrderController {
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
+    @Query('status') status?: string,
   ) {
     // 如果提供了limit和offset，优先使用它们；否则根据page和pageSize计算
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
 
-    const result = await this.orderService.findAll(finalLimit, finalOffset);
+    const result = await this.orderService.findAll(finalLimit, finalOffset, status);
 
     return {
       list: result.list,

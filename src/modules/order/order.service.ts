@@ -260,6 +260,7 @@ export class OrderService {
   async findAll(
     limit?: number,
     offset?: number,
+    status?: string,
   ): Promise<{ list: Order[]; total: number }> {
     const query = this.orderRepository.createQueryBuilder('order');
 
@@ -268,6 +269,10 @@ export class OrderService {
     }
     if (offset) {
       query.offset(offset);
+    }
+
+    if(status) {
+      query.where('order.status = :status', { status });
     }
 
     const [items, totalCount] = await query

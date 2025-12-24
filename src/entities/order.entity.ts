@@ -84,7 +84,7 @@ export class Order {
     name: 'status',
     default: 'pending',
     comment:
-      '订单状态：pending-待支付, paid-已支付, shipped-已发货, completed-已完成, cancelled-已取消',
+      '订单状态：pending-待支付, pending-shipment-待发货, pending-receipt-待收货, completed-已完成, cancelled-已取消',
   })
   status: string;
 
