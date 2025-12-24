@@ -11,6 +11,9 @@ class OrderProductDto {
   @IsNumber({}, { message: '产品数量必须是数字' })
   @Min(1, { message: '产品数量不能小于1' })
   quantity: number;
+
+  @IsNotEmpty({ message: '产品单价不能为空' })
+  price: number;
 }
 
 // 收货地址验证类

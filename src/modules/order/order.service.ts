@@ -36,8 +36,6 @@ export class OrderService {
     return this.dataSource.transaction(async (manager) => {
       const { userId, products, couponIds, shippingAddress, paymentMethod, remark } = createOrderDto;
       
-      // 1. 用户验证（假设JWT守卫已经验证了用户的真实性）
-      
       // 2. 商品验证和价格计算
       let goodsAmount = 0;
       const validatedProducts: Array<{ 
@@ -64,15 +62,14 @@ export class OrderService {
         if (product.stock < productItem.quantity) {
           throw new BadRequestException(`商品 ${product.name} 库存不足，当前库存: ${product.stock}`);
         }
-        
         validatedProducts.push({
           product,
           quantity: productItem.quantity,
-          price: product.price, // 使用当前价格（快照）
-          subtotalAmount: product.price * productItem.quantity
+          price: productItem.price, // 使用当前价格（快照）
+          subtotalAmount: productItem.price * productItem.quantity
         });
         
-        goodsAmount += product.price * productItem.quantity;
+        goodsAmount += productItem.price * productItem.quantity;
       }
       
       // 3. 优惠券验证和优惠金额计算
