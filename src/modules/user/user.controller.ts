@@ -16,24 +16,24 @@ export class UserController {
     return users;
   }
 
-  @Get(':userId')
+  @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOneUser(@Param('userId') userId: string) {
-    const user = await this.userService.findById(userId);
+  async findOneUser(@Param('id') id: number) {
+    const user = await this.userService.findById(id);
     return user;
   }
 
-  @Put(':userId')
+  @Put(':id')
   @UseGuards(JwtAuthGuard)
-  async updateUser(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto) {
-    const updatedUser = await this.userService.update(userId, updateUserDto);
+  async updateUser(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
+    const updatedUser = await this.userService.update(id, updateUserDto);
     return updatedUser;
   }
 
-  @Delete(':userId')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async removeUser(@Param('userId') userId: string) {
-    await this.userService.remove(userId);
+  async removeUser(@Param('id') id: number) {
+    await this.userService.remove(id);
     return null;
   }
 
@@ -45,7 +45,7 @@ export class UserController {
   @Get('profile/me')
   @UseGuards(JwtAuthGuard)
   async getCurrentUserProfile(@GetCurrentUser() user) {
-    return this.userService.findById(user.userId);
+    return this.userService.findById(user.id);
   }
 
   /**
@@ -57,6 +57,6 @@ export class UserController {
   @Put('profile/me')
   @UseGuards(JwtAuthGuard)
   async updateCurrentUserProfile(@GetCurrentUser() user, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(user.userId, updateUserDto);
+    return this.userService.update(user.id, updateUserDto);
   }
 }

@@ -91,7 +91,7 @@ export class CouponReceiveRecord {
    * 用户信息
    * 关联到用户实体
    */
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

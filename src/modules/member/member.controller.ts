@@ -44,8 +44,8 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Patch('levels/:id')
-  updateMemberLevel(@Param('id') id: string, @Body() updateMemberLevelDto: UpdateMemberLevelDto) {
-    return this.memberService.updateMemberLevel(+id, updateMemberLevelDto);
+  updateMemberLevel(@Param('id') id: number, @Body() updateMemberLevelDto: UpdateMemberLevelDto) {
+    return this.memberService.updateMemberLevel(id, updateMemberLevelDto);
   }
 
   /**
@@ -54,8 +54,8 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Delete('levels/:id')
-  deleteMemberLevel(@Param('id') id: string) {
-    return this.memberService.deleteMemberLevel(+id);
+  deleteMemberLevel(@Param('id') id: number) {
+    return this.memberService.deleteMemberLevel(id);
   }
 
 
@@ -82,7 +82,7 @@ export class MemberController {
   @UseGuards(JwtAuthGuard)
   @Get('info/me')
   getCurrentMemberInfo(@Request() req) {
-    return this.memberService.getMemberInfoById(req.user.userId);
+    return this.memberService.getMemberInfoById(req.user.id);
   }
 
   /**
@@ -121,7 +121,7 @@ export class MemberController {
   @Get('points/history')
   getPointsHistory(@Request() req, @Query('page') page: string, @Query('limit') limit: string) {
     return this.memberService.getPointsHistory(
-      req.user.userId,
+      req.user.id,
       page ? +page : 1,
       limit ? +limit : 10,
     );
@@ -135,9 +135,8 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Post('subscribe/:levelId')
-  subscribeMember(@Request() req, @Param('levelId') levelId: string) {
-    console.log(levelId)
-    return this.memberService.subscribeMember(req.user.userId, +levelId);
+  subscribeMember(@Request() req, @Param('levelId') levelId: number) {
+    return this.memberService.subscribeMember(req.user.id, levelId);
   }
 
   /**
@@ -151,7 +150,7 @@ export class MemberController {
   @Get('subscriptions')
   getMemberSubscriptions(@Request() req, @Query('page') page: string, @Query('limit') limit: string) {
     return this.memberService.getMemberSubscriptions(
-      req.user.userId,
+      req.user.id,
       page ? +page : 1,
       limit ? +limit : 10,
     );

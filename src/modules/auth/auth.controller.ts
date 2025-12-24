@@ -41,7 +41,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async logout(@Request() req) {
-    await this.authService.logout(req.user.userId);
+    await this.authService.logout(req.user.id);
     return { isLogout: true, message: '退出登录成功' };
   }
 

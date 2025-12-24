@@ -34,18 +34,18 @@ export class CreateMemberLevelDto {
 
   /**
    * 有效期
-   * 必须是整数且大于0（单位：月）
+   * 必须是整数且大于等于0（单位：月）0：无有效期
    */
   @IsInt()
-  @Min(1)
+  @Min(0)
   validityPeriod: number;
 
   /**
    * 折扣率
-   * 必须是数字且大于0
+   * 0：无折扣
    */
   @IsNumber()
-  @Min(0.01)
+  @Min(0)
   discountRate: number;
 
   /**

@@ -1,6 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Product } from './product.entity';
 
+export enum CategoryType {
+  POINT = 'point',
+  PRODUCT = 'product',
+}
+
 /**
  * 分类实体类
  * 用于存储产品分类信息，支持层级结构
@@ -13,13 +18,6 @@ export class Category {
    */
   @PrimaryGeneratedColumn()
   id: number;
-
-  /**
-   * 分类ID
-   * 自定义生成的分类标识
-   */
-  @Column({ name: 'category_id', unique: true, nullable: false, comment: '分类ID' })
-  categoryId: string;
 
   /**
    * 分类名称
@@ -40,7 +38,7 @@ export class Category {
    * 用于实现层级分类，顶级分类为null
    */
   @Column({ name: 'parent_id', nullable: true, comment: '父分类ID' })
-  parentId?: string;
+  parentId?: number;
 
   /**
    * 分类图标
@@ -55,6 +53,15 @@ export class Category {
    */
   @Column({ name: 'sort_order', default: 0, comment: '排序权重' })
   sortOrder: number;
+
+  /**
+   * 分类类型
+   * 用于区分不同类型的分类，如商品分类、服务分类等
+   * point: 积分分类，用于积分商品的分类
+   * product: 商品分类，用于普通商品的分类
+   */
+  @Column({ name: 'type', nullable: true, length: 50, comment: '分类类型' })
+  type?: CategoryType;
 
   /**
    * 分类状态

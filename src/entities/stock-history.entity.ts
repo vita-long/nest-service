@@ -19,15 +19,15 @@ export class StockHistory {
    * 外键，关联到产品表
    */
   @Column({ name: 'product_id', nullable: false, comment: '产品ID' })
-  productId: string;
+  productId: number;
 
   /**
    * 产品
    * 多对一关系，关联到产品实体
    * 使用级联删除，当产品被删除时，相关的库存历史记录也会被自动删除
    */
-  @ManyToOne(() => Product, (product) => product.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'product_id', referencedColumnName: 'productId' })
+  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'product_id' })
   product: Product;
 
   /**

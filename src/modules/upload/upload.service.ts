@@ -94,7 +94,7 @@ export class UploadService {
       resource.status = 1; // 默认启用
       resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
       resource.mimetype = file.mimetype; // 存储MIME类型
-      resource.userId = userId; // 设置上传用户ID
+      resource.userId = parseInt(userId); // 设置上传用户ID
 
       // 保存到数据库
       const savedResource = await this.resourcesRepository.save(resource);

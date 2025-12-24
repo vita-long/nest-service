@@ -17,12 +17,7 @@ export class ProductService {
     private categoryService: CategoryService
   ) {}
 
-  // 生成自定义产品ID
-  private generateProductId(): string {
-    const machineId = process.env.MACHINE_ID || '0';
-    const randomId = uuidv7();
-    return `${machineId}prod_${randomId}`;
-  }
+  // 不再需要生成自定义产品ID，使用自增ID
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     // 验证分类是否存在
@@ -30,7 +25,6 @@ export class ProductService {
 
     const product = this.productRepository.create({
       ...createProductDto,
-      productId: this.generateProductId(),
       stock: createProductDto.stock || 0,
       sales: createProductDto.sales || 0,
       images: createProductDto.images || [],
@@ -79,42 +73,42 @@ export class ProductService {
     return { list: items, total: totalCount };
   }
 
-  async findById(productId: string): Promise<Product> {
+  async findById(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
-      where: { productId },
+      where: { id },
       relations: ['category'],
     });
     
     if (!product) {
-      throw new NotFoundException(`Product with ID ${productId} not found`);
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
     return product!;
   }
 
-  async update(productId: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     // 检查产品是否存在
-    await this.findById(productId);
+    await this.findById(id);
     
     // 如果更新分类ID，验证分类是否存在
     if (updateProductDto.categoryId) {
       await this.categoryService.findById(updateProductDto.categoryId);
     }
 
-    await this.productRepository.update({ productId }, updateProductDto);
-    return this.findById(productId);
+    await this.productRepository.update({ id }, updateProductDto);
+    return this.findById(id);
   }
 
-  async remove(productId: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     // 检查产品是否存在
-    await this.findById(productId);
+    await this.findById(id);
     
-    const result = await this.productRepository.delete({ productId });
+    const result = await this.productRepository.delete({ id });
     if (result.affected === 0) {
-      throw new NotFoundException(`Product with ID ${productId} not found`);
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
 
-  async findByCategory(categoryId: string, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
+  async findByCategory(categoryId: number, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
     // 验证分类是否存在
     await this.categoryService.findById(categoryId);
 
@@ -152,7 +146,7 @@ export class ProductService {
     });
   }
 
-  async updateStock(productId: string, quantity: number, type: 'purchase' | 'sale' | 'adjustment' = 'adjustment', operator?: string, remark?: string): Promise<void> {
+  async updateStock(productId: number, quantity: number, type: 'purchase' | 'sale' | 'adjustment' = 'adjustment', operator?: string, remark?: string): Promise<void> {
     const product = await this.findById(productId);
     const newStock = product.stock + quantity;
     
@@ -160,11 +154,11 @@ export class ProductService {
       throw new BadRequestException('Insufficient stock');
     }
     
-    await this.productRepository.update({ productId }, { stock: newStock });
+    await this.productRepository.update({ id: productId }, { stock: newStock });
     
     // 记录库存历史
     const stockHistory = this.stockHistoryRepository.create({
-      productId: product.productId,
+      productId: product.id,
       previousStock: product.stock,
       changeQuantity: quantity,
       currentStock: newStock,
@@ -176,12 +170,12 @@ export class ProductService {
     await this.stockHistoryRepository.save(stockHistory);
   }
 
-  async adjustStock(productId: string, adjustStockDto: AdjustStockDto): Promise<void> {
+  async adjustStock(productId: number, adjustStockDto: AdjustStockDto): Promise<void> {
     const { changeQuantity, type, operator, remark } = adjustStockDto;
     await this.updateStock(productId, changeQuantity, type, operator, remark);
   }
 
-  async getStockHistory(productId: string, limit?: number, offset?: number): Promise<{ list: StockHistory[], total: number }> {
+  async getStockHistory(productId: number, limit?: number, offset?: number): Promise<{ list: StockHistory[], total: number }> {
     // 验证产品是否存在
     await this.findById(productId);
 
@@ -246,9 +240,9 @@ export class ProductService {
     return { list: items, total: totalCount };
   }
 
-  async updateSales(productId: string, quantity: number): Promise<void> {
+  async updateSales(productId: number, quantity: number): Promise<void> {
     const product = await this.findById(productId);
-    await this.productRepository.update({ productId }, { sales: product.sales + quantity });
+    await this.productRepository.update({ id: productId }, { sales: product.sales + quantity });
     
     // 记录销售库存变化
     await this.updateStock(productId, -quantity, 'sale', undefined, `Sale of ${quantity} units`);

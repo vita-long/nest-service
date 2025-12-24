@@ -117,13 +117,12 @@ export class Resources {
    */
   @Column({
     name: 'user_id',
-    type: 'varchar',
-    length: 50,
+    type: 'int',
     nullable: true,
     comment: '上传用户ID',
   })
   @Index()
-  userId: string;
+  userId: number;
 
   /**
    * 资源状态

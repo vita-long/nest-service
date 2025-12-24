@@ -1,5 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './user.entity';
+import { OrderItem } from './order-item.entity';
+import { OrderDiscount } from './order-discount.entity';
+import { OrderLog } from './order-log.entity';
 
 /**
  * 订单实体类
@@ -15,22 +18,29 @@ export class Order {
   id: number;
 
   /**
-   * 订单ID
-   * 自定义生成的订单标识
-   */
-  @Column({ name: 'order_id', unique: true, nullable: false, comment: '订单ID' })
-  orderId: string;
-
-  /**
    * 用户ID
    * 外键，关联到用户表
    */
   @Column({ name: 'user_id', nullable: false, comment: '用户ID' })
-  userId: string;
+  userId: number;
+
+  /**
+   * 商品总金额
+   * 订单中所有商品的总金额（不含优惠）
+   */
+  @Column({ name: 'goods_amount', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '商品总金额' })
+  goodsAmount: number;
+
+  /**
+   * 优惠总金额
+   * 订单中所有优惠的总金额
+   */
+  @Column({ name: 'discount_amount', type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false, comment: '优惠总金额' })
+  discountAmount: number;
 
   /**
    * 订单总金额
-   * 订单的总价格，支持小数
+   * 订单的最终支付金额（商品总金额 - 优惠总金额）
    */
   @Column({ name: 'total_amount', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '订单总金额' })
   totalAmount: number;
@@ -109,7 +119,28 @@ export class Order {
    * 所属用户
    * 多对一关系，多个订单属于一个用户
    */
-  @ManyToOne(() => User, (user) => user.id)
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
   user: User;
+
+  /**
+   * 订单明细
+   * 一对多关系，一个订单包含多个订单明细
+   */
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
+  orderItems: OrderItem[];
+
+  /**
+   * 订单优惠明细
+   * 一对多关系，一个订单可以使用多个优惠券
+   */
+  @OneToMany(() => OrderDiscount, (orderDiscount) => orderDiscount.order)
+  orderDiscounts: OrderDiscount[];
+
+  /**
+   * 订单日志
+   * 一对多关系，一个订单包含多个操作日志
+   */
+  @OneToMany(() => OrderLog, (orderLog) => orderLog.order)
+  orderLogs: OrderLog[];
 }

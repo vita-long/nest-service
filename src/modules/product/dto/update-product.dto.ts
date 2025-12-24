@@ -49,7 +49,8 @@ export class UpdateProductDto {
   isRecommend?: boolean;
 
   @IsOptional()
-  categoryId?: string;
+  @IsNumber({}, { message: 'Category ID must be a number' })
+  categoryId?: number;
 
   @IsOptional()
   @IsEnum(ProductType, { message: 'Invalid product type' })

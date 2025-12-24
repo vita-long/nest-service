@@ -49,11 +49,7 @@ export class PaymentController {
   async findEnabled() {
     try {
       const paymentMethods = await this.paymentService.findEnabled();
-      return {
-        code: HttpStatus.OK,
-        message: '获取启用的支付方式列表成功',
-        data: paymentMethods,
-      };
+      return paymentMethods;
     } catch (error) {
       throw new HttpException(
         error.message || '获取启用的支付方式列表失败',
@@ -67,9 +63,9 @@ export class PaymentController {
    * GET /api/payment-methods/:id
    */
   @Get(':id')
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id') id: number) {
     try {
-      const paymentMethod = await this.paymentService.findById(+id);
+      const paymentMethod = await this.paymentService.findById(id);
       return paymentMethod;
     } catch (error) {
       throw new HttpException(
@@ -101,9 +97,9 @@ export class PaymentController {
    * PUT /api/payment-methods/:id
    */
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updatePaymentMethodDto: UpdatePaymentMethodDto) {
+  async update(@Param('id') id: number, @Body() updatePaymentMethodDto: UpdatePaymentMethodDto) {
     try {
-      const paymentMethod = await this.paymentService.update(+id, updatePaymentMethodDto);
+      const paymentMethod = await this.paymentService.update(id, updatePaymentMethodDto);
       return paymentMethod;
     } catch (error) {
       throw new HttpException(
@@ -118,9 +114,9 @@ export class PaymentController {
    * PUT /api/payment-methods/:id/enable
    */
   @Put(':id/enable')
-  async enable(@Param('id') id: string) {
+  async enable(@Param('id') id: number) {
     try {
-      const paymentMethod = await this.paymentService.toggleStatus(+id, true);
+      const paymentMethod = await this.paymentService.toggleStatus(id, true);
       return paymentMethod;
     } catch (error) {
       throw new HttpException(
@@ -135,9 +131,9 @@ export class PaymentController {
    * PUT /api/payment-methods/:id/disable
    */
   @Put(':id/disable')
-  async disable(@Param('id') id: string) {
+  async disable(@Param('id') id: number) {
     try {
-      const paymentMethod = await this.paymentService.toggleStatus(+id, false);
+      const paymentMethod = await this.paymentService.toggleStatus(id, false);
       return paymentMethod;
     } catch (error) {
       throw new HttpException(
@@ -152,9 +148,9 @@ export class PaymentController {
    * DELETE /api/payment-methods/:id
    */
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: number) {
     try {
-      await this.paymentService.remove(+id);
+      await this.paymentService.remove(id);
       return {
         message: '删除支付方式成功',
       };

@@ -19,14 +19,14 @@ export class PointsHistory {
    * 外键，关联到用户表
    */
   @Column({ name: 'user_id', nullable: false, comment: '用户ID' })
-  userId: string;
+  userId: number;
 
   /**
    * 用户
    * 多对一关系，关联到用户实体
    */
-  @ManyToOne(() => User, (user) => user.id)
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   /**
@@ -69,7 +69,7 @@ export class PointsHistory {
    * 如果积分变化与订单相关，记录订单ID
    */
   @Column({ name: 'order_id', nullable: true, comment: '订单ID' })
-  orderId?: string;
+  orderId?: number;
 
   /**
    * 过期时间

@@ -1,6 +1,6 @@
 export const MemberLevelConstants = {
   /**
-   * 普通会员
+   * 非会员
    */
   NORMAL: 'normal',
 

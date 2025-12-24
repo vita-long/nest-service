@@ -14,13 +14,6 @@ export class User {
   id: number;
 
   /**
-   * 用户ID
-   * 自定义生成的用户标识
-   */
-  @Column({ name: 'user_id', unique: true, nullable: false, comment: '用户ID' })
-  userId: string;
-
-  /**
    * 用户名
    * 登录账号，必须唯一且不能为空
    */

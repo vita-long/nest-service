@@ -20,13 +20,6 @@ export class Product {
   id: number;
 
   /**
-   * 产品ID
-   * 自定义生成的产品标识
-   */
-  @Column({ name: 'product_id', unique: true, nullable: false, comment: '产品ID' })
-  productId: string;
-
-  /**
    * 产品名称
    * 产品的显示名称，不能为空
    */
@@ -108,7 +101,7 @@ export class Product {
    * 外键，关联到分类表
    */
   @Column({ name: 'category_id', nullable: false, comment: '分类ID' })
-  categoryId: string;
+  categoryId: number;
 
   /**
    * 创建时间
@@ -129,7 +122,7 @@ export class Product {
    * 多对一关系，多个产品属于一个分类
    */
   @ManyToOne(() => Category, (category) => category.products)
-  @JoinColumn({ name: 'category_id', referencedColumnName: 'categoryId' })
+  @JoinColumn({ name: 'category_id' })
   category: Category;
 
   /**

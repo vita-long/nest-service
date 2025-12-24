@@ -237,7 +237,7 @@ export class CouponService {
     for (let i = 0; i < issueCouponDto.quantity; i++) {
       // 为每个领取的优惠券生成记录
       const receiveRecord = this.couponReceiveRecordRepository.create({
-        userId: parseInt(issueCouponDto.userId, 10), // 将string类型的userId转换为number
+        userId: issueCouponDto.userId,
         couponId: coupon.id,
         couponCode: coupon.code,
         receiveTime: nowDate,

@@ -1,26 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Category } from '../../entities/category.entity';
+import { Category, CategoryType } from '../../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { uuidv7 } from 'uuidv7';
 
 @Injectable()
 export class CategoryService {
   constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>) {}
 
-  // 生成自定义分类ID
-  private generateCategoryId(): string {
-    const machineId = process.env.MACHINE_ID || '0';
-    const randomId = uuidv7();
-    return `${machineId}C${randomId}`;
-  }
-
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const category = this.categoryRepository.create({
       ...createCategoryDto,
-      categoryId: this.generateCategoryId(),
       isActive: createCategoryDto.isActive ?? true,
     });
     return this.categoryRepository.save(category);
@@ -32,53 +23,58 @@ export class CategoryService {
     });
   }
 
-  async findActive(): Promise<Category[]> {
+  async findActive(type?: CategoryType): Promise<Category[]> {
+    const where = { isActive: true };
+    if (type !== undefined) {
+      Object.assign(where, { type });
+    }
+    
     return this.categoryRepository.find({
-      where: { isActive: true },
+      where,
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
   }
 
-  async findById(categoryId: string): Promise<Category> {
-    const category = await this.categoryRepository.findOne({ where: { categoryId } });
+  async findById(id: number): Promise<Category> {
+    const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      throw new NotFoundException(`Category with ID ${id} not found`);
     }
-    return category!;
+    return category;
   }
 
-  async update(categoryId: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
-    const category = await this.findById(categoryId);
+  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+    const category = await this.findById(id);
     
     // 不允许将分类设置为其自身的子分类
-    if (updateCategoryDto.parentId === categoryId) {
+    if (updateCategoryDto.parentId === category.id) {
       throw new Error('A category cannot be set as its own child');
     }
 
-    await this.categoryRepository.update({ categoryId }, updateCategoryDto);
-    return this.findById(categoryId);
+    await this.categoryRepository.update({ id }, updateCategoryDto);
+    return this.findById(id);
   }
 
-  async remove(categoryId: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     // 检查分类是否存在
-    await this.findById(categoryId);
+    await this.findById(id);
     
-    const result = await this.categoryRepository.delete({ categoryId });
+    const result = await this.categoryRepository.delete({ id });
     if (result.affected === 0) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      throw new NotFoundException(`Category with ID ${id} not found`);
     }
   }
 
-  async findByParentId(parentId?: string): Promise<Category[]> {
+  async findByParentId(parentId?: number): Promise<Category[]> {
     return this.categoryRepository.find({
       where: { parentId },
       order: { sortOrder: 'ASC' },
     });
   }
 
-  async getCategoryWithProducts(categoryId: string): Promise<Category | null> {
+  async getCategoryWithProducts(id: number): Promise<Category | null> {
     return this.categoryRepository.findOne({
-      where: { categoryId },
+      where: { id },
       relations: ['products'],
     });
   }

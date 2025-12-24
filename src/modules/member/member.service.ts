@@ -153,7 +153,7 @@ export class MemberService {
    * @param userId 用户ID
    * @returns 会员信息
    */
-  async getMemberInfoById(userId: string): Promise<MemberInfo> {
+  async getMemberInfoById(userId: number): Promise<MemberInfo> {
     const memberInfo = await this.memberInfoRepository.findOne({
       where: { userId },
       relations: ['currentLevel'],
@@ -171,7 +171,7 @@ export class MemberService {
    * @param userId 用户ID
    * @returns 创建的会员信息
    */
-  async createMemberInfo(userId: string): Promise<MemberInfo> {
+  async createMemberInfo(userId: number): Promise<MemberInfo> {
     // 检查会员信息是否已存在
     const existingMemberInfo = await this.memberInfoRepository.findOne({
       where: { userId },
@@ -196,7 +196,7 @@ export class MemberService {
       points: 0,
       freeShippingTicketsBalance: defaultLevel.freeShippingTickets,
       freeBouquetUpgradesBalance: defaultLevel.freeBouquetUpgrades,
-      subscriptionStatus: 'inactive',
+      subscriptionStatus: 'active',
     });
 
     return await this.memberInfoRepository.save(memberInfo);
@@ -252,7 +252,7 @@ export class MemberService {
    * @param levelId 会员等级ID
    * @returns 会员订阅信息
    */
-  async subscribeMember(userId: string, levelId: number): Promise<MemberSubscription> {
+  async subscribeMember(userId: number, levelId: number): Promise<MemberSubscription> {
     const memberInfo = await this.getMemberInfoById(userId);
     const memberLevel = await this.getMemberLevelById(levelId);
 
@@ -296,7 +296,7 @@ export class MemberService {
    * @param limit 每页数量
    * @returns 积分历史记录列表和总数
    */
-  async getPointsHistory(userId: string, page: number = 1, limit: number = 10): Promise<{ data: PointsHistory[]; total: number }> {
+  async getPointsHistory(userId: number, page: number = 1, limit: number = 10): Promise<{ data: PointsHistory[]; total: number }> {
     const [data, total] = await this.pointsHistoryRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
@@ -316,7 +316,7 @@ export class MemberService {
    * @param limit 每页数量
    * @returns 会员订阅记录列表和总数
    */
-  async getMemberSubscriptions(userId: string, page: number = 1, limit: number = 10): Promise<{ data: MemberSubscription[]; total: number }> {
+  async getMemberSubscriptions(userId: number, page: number = 1, limit: number = 10): Promise<{ data: MemberSubscription[]; total: number }> {
     const [data, total] = await this.memberSubscriptionRepository.findAndCount({
       where: { userId },
       relations: ['level'],

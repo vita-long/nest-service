@@ -32,17 +32,17 @@ export class OrderController {
   }
 
   // 根据ID获取单个订单
-  @Get(':orderId')
+  @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('orderId') orderId: string) {
-    return this.orderService.findById(orderId);
+  async findOne(@Param('id') id: number) {
+    return this.orderService.findById(id);
   }
 
   // 根据用户ID获取订单列表
-  @Get('user/:userId')
+  @Get('user/:id')
   @UseGuards(JwtAuthGuard)
   async findByUserId(
-    @Param('userId') userId: string,
+    @Param('id') id: number,
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
@@ -51,7 +51,7 @@ export class OrderController {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
     
-    const result = await this.orderService.findByUserId(userId, finalLimit, finalOffset);
+    const result = await this.orderService.findByUserId(id, finalLimit, finalOffset);
     
     return {
       list: result.list,
@@ -69,30 +69,30 @@ export class OrderController {
   }
 
   // 更新订单（需要认证）
-  @Put(':orderId')
+  @Put(':id')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Param('orderId') orderId: string,
+    @Param('id') id: number,
     @Body() updateOrderDto: UpdateOrderDto
   ) {
-    return this.orderService.update(orderId, updateOrderDto);
+    return this.orderService.update(id, updateOrderDto);
   }
 
   // 更新订单状态（需要认证）
-  @Put(':orderId/status')
+  @Put(':id/status')
   @UseGuards(JwtAuthGuard)
   async updateStatus(
-    @Param('orderId') orderId: string,
+    @Param('id') id: number,
     @Body('status') status: string
   ) {
-    return this.orderService.updateStatus(orderId, status);
+    return this.orderService.updateStatus(id, status);
   }
 
   // 删除订单（需要认证）
-  @Delete(':orderId')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async remove(@Param('orderId') orderId: string) {
-    await this.orderService.remove(orderId);
+  async remove(@Param('id') id: number) {
+    await this.orderService.remove(id);
     return { message: 'Order deleted successfully' };
   }
 }

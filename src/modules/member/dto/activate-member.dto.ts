@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsEnum } from 'class-validator';
 
 /**
  * 会员状态枚举
@@ -15,9 +15,9 @@ export class ActivateMemberDto {
   /**
    * 用户ID
    */
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  userId: string;
+  userId: number;
 
   /**
    * 会员状态

@@ -27,14 +27,14 @@ export class MemberSubscription {
    * 外键，关联到用户表
    */
   @Column({ name: 'user_id', nullable: false, comment: '用户ID' })
-  userId: string;
+  userId: number;
 
   /**
    * 用户
    * 多对一关系，关联到用户实体
    */
   @ManyToOne(() => User, (user) => user.id)
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   /**
@@ -99,7 +99,7 @@ export class MemberSubscription {
    * 关联的支付订单ID
    */
   @Column({ name: 'order_id', nullable: true, comment: '订单ID' })
-  orderId?: string;
+  orderId?: number;
 
   /**
    * 创建时间

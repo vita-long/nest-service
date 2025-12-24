@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, MaxLength, IsNumber } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsNotEmpty({ message: 'Category name is required' })
@@ -10,7 +10,8 @@ export class CreateCategoryDto {
   description?: string;
 
   @IsOptional()
-  parentId?: string;
+  @IsNumber({}, { message: 'Parent category ID must be a number' })
+  parentId?: number;
 
   @IsOptional()
   icon?: string;

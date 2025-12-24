@@ -51,7 +51,8 @@ export class CreateProductDto {
   isRecommend?: boolean = false;
 
   @IsNotEmpty({ message: 'Category ID is required' })
-  categoryId: string;
+  @IsNumber({}, { message: 'Category ID must be a number' })
+  categoryId: number;
 
   @IsOptional()
   @IsEnum(ProductType, { message: 'Invalid product type' })

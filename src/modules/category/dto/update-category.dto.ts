@@ -1,4 +1,4 @@
-import { IsOptional, MaxLength } from 'class-validator';
+import { IsOptional, MaxLength, IsNumber } from 'class-validator';
 
 export class UpdateCategoryDto {
   @IsOptional()
@@ -10,7 +10,8 @@ export class UpdateCategoryDto {
   description?: string;
 
   @IsOptional()
-  parentId?: string;
+  @IsNumber({}, { message: 'Parent category ID must be a number' })
+  parentId?: number;
 
   @IsOptional()
   icon?: string;

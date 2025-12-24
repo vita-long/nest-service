@@ -20,14 +20,14 @@ export class MemberInfo {
    * 外键，关联到用户表
    */
   @Column({ name: 'user_id', nullable: false, unique: true, comment: '用户ID' })
-  userId: string;
+  userId: number;
 
   /**
    * 用户
    * 一对一关系，关联到用户实体
    */
-  @ManyToOne(() => User, (user) => user.id)
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   /**
@@ -41,7 +41,7 @@ export class MemberInfo {
    * 当前等级
    * 多对一关系，关联到会员等级实体
    */
-  @ManyToOne(() => MemberLevel, (level) => level.id)
+  @ManyToOne(() => MemberLevel)
   @JoinColumn({ name: 'current_level_id' })
   currentLevel: MemberLevel;
 

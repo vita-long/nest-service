@@ -14,13 +14,13 @@ import axios from 'axios';
 import { nanoid } from 'nanoid';
 
 export interface JwtPayload {
-  userId: string;
+  userId: number;
   username: string;
   role: string;
 }
 
 export interface RefreshTokenPayload {
-  userId: string;
+  userId: number;
   tokenId?: string;
 }
 
@@ -128,14 +128,14 @@ export class AuthService {
     // Create new user
     const newUser = await this.userService.create(registerDto);
 
-    this.logger.info('用户注册成功', { userId: newUser.userId, username: newUser.username });
+    this.logger.info('用户注册成功', { userId: newUser.id, username: newUser.username });
 
     // 创建会员信息
-    await this.memberService.createMemberInfo(newUser.userId);
+    await this.memberService.createMemberInfo(newUser.id);
     
     return {
       user: {
-        userId: newUser.userId,
+        userId: newUser.id,
         username: newUser.username,
         email: newUser.email,
         role: newUser.role,
@@ -162,14 +162,14 @@ export class AuthService {
     }
 
     // 更新用户登录信息
-    await this.userService.update(user.userId, {
+    await this.userService.update(user.id, {
       status: true,
       lastLoginTime: new Date(),
       lastLoginIp: ipAddress
     });
 
     // 检查用户是否已有活跃令牌，如果有则使其失效
-    const existingTokenKey = `user:${user.userId}:tokens`;
+    const existingTokenKey = `user:${user.id}:tokens`;
     const existingTokens = await this.redisCacheService.get<string[]>(existingTokenKey);
     
     if (existingTokens && Array.isArray(existingTokens) && existingTokens.length > 0) {
@@ -190,19 +190,19 @@ export class AuthService {
     const tokens = this.generateTokens(user, accessTokenExpiresIn, refreshTokenExpiresIn);
     
     // 生成唯一的tokenId
-    const tokenId = `${user.userId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
+    const tokenId = `${user.id}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
     
     // 存储令牌到Redis
     await this.redisCacheService.set(
       tokenId,
-      { userId: user.userId, accessToken: tokens.accessToken },
+      { userId: user.id, accessToken: tokens.accessToken },
       accessTokenExpiresIn,
       CACHE_PREFIX.ACCESS_TOKEN
     );
     
     await this.redisCacheService.set(
       tokenId,
-      { userId: user.userId, refreshToken: tokens.refreshToken },
+      { userId: user.id, refreshToken: tokens.refreshToken },
       refreshTokenExpiresIn,
       CACHE_PREFIX.REFRESH_TOKEN
     );
@@ -215,7 +215,7 @@ export class AuthService {
         refreshTokenExpiresIn
       );
     
-    this.logger.info('用户登录成功', { userId: user.userId, username: user.username, ipAddress });
+    this.logger.info('用户登录成功', { userId: user.id, username: user.username, ipAddress });
     const { password, ...otherUserInfo } = user;
     return {
       user: otherUserInfo,
@@ -232,7 +232,7 @@ export class AuthService {
   private generateTokens(user: User, accessTokenExpiresIn?: number, refreshTokenExpiresIn?: number) {
     // 生成访问令牌
     const accessTokenPayload: JwtPayload = {
-      userId: user.userId,
+      userId: user.id,
       username: user.username,
       role: user.role,
     };
@@ -243,7 +243,7 @@ export class AuthService {
 
     // 生成刷新令牌
     const refreshTokenPayload: RefreshTokenPayload = {
-      userId: user.userId,
+      userId: user.id,
     };
     const refreshToken = this.jwtService.sign(refreshTokenPayload, {
       secret: this.configService.get('jwt.refreshTokenSecret'),
@@ -257,7 +257,7 @@ export class AuthService {
   /**
    * 退出登录，将用户状态设置为离线并使所有令牌失效
    */
-  async logout(userId: string): Promise<void> {
+  async logout(userId: number): Promise<void> {
     this.logger.info('用户退出登录', { userId });
     
     // 获取用户的活跃令牌列表
@@ -343,19 +343,19 @@ export class AuthService {
       const tokens = this.generateTokens(user as User, accessTokenExpiresIn, refreshTokenExpiresIn);
       
       // 生成新的tokenId
-      const newTokenId = `${user.userId}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
+      const newTokenId = `${user.id}:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`;
       
       // 存储新令牌到Redis
       await this.redisCacheService.set(
         newTokenId,
-        { userId: user.userId, accessToken: tokens.accessToken },
+        { userId: user.id, accessToken: tokens.accessToken },
         accessTokenExpiresIn,
         CACHE_PREFIX.ACCESS_TOKEN
       );
       
       await this.redisCacheService.set(
         newTokenId,
-        { userId: user.userId, refreshToken: tokens.refreshToken },
+        { userId: user.id, refreshToken: tokens.refreshToken },
         refreshTokenExpiresIn,
         CACHE_PREFIX.REFRESH_TOKEN
       );
@@ -448,13 +448,13 @@ export class AuthService {
         });
 
         // 创建会员信息
-        await this.memberService.createMemberInfo(user.userId);
+        await this.memberService.createMemberInfo(user.id);
 
-        this.logger.info('微信登录创建新用户成功', { userId: user.userId, openid });
+        this.logger.info('微信登录创建新用户成功', { userId: user.id, openid });
       }
 
       // 更新用户登录信息
-      const updatedUser = await this.userService.update(user.userId, {
+      const updatedUser = await this.userService.update(user.id, {
         status: true,
         avatar: wechatLoginDto.avatar,
         nickname: wechatLoginDto.nickname,
@@ -465,7 +465,7 @@ export class AuthService {
       user = updatedUser as User;
 
       // 检查用户是否已有活跃令牌，如果有则使其失效
-      const existingTokenKey = `user:${user.userId}:tokens`;
+      const existingTokenKey = `user:${user.id}:tokens`;
       const existingTokens = await this.redisCacheService.get<string[]>(existingTokenKey);
 
       if (existingTokens && Array.isArray(existingTokens) && existingTokens.length > 0) {
@@ -486,19 +486,19 @@ export class AuthService {
       const tokens = this.generateTokens(user, accessTokenExpiresIn, refreshTokenExpiresIn);
 
       // 生成唯一的tokenId
-      const tokenId = `${user.userId}:${Date.now()}:${nanoid(7)}`;
+      const tokenId = `${user.id}:${Date.now()}:${nanoid(7)}`;
 
       // 存储令牌到Redis
       await this.redisCacheService.set(
         tokenId,
-        { userId: user.userId, accessToken: tokens.accessToken },
+        { userId: user.id, accessToken: tokens.accessToken },
         accessTokenExpiresIn,
         CACHE_PREFIX.ACCESS_TOKEN
       );
-
+      
       await this.redisCacheService.set(
         tokenId,
-        { userId: user.userId, refreshToken: tokens.refreshToken },
+        { userId: user.id, refreshToken: tokens.refreshToken },
         refreshTokenExpiresIn,
         CACHE_PREFIX.REFRESH_TOKEN
       );
@@ -511,7 +511,7 @@ export class AuthService {
         refreshTokenExpiresIn
       );
 
-      this.logger.info('微信登录成功', { userId: user.userId, openid, ipAddress });
+      this.logger.info('微信登录成功', { userId: user.id, openid, ipAddress });
       console.log(user);
       const { password, ...otherUserInfo } = user;
       return {

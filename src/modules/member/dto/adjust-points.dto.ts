@@ -9,7 +9,8 @@ export class AdjustPointsDto {
    * 必须不为空
    */
   @IsNotEmpty()
-  userId: string;
+  @IsNumber()
+  userId: number;
 
   /**
    * 调整数量

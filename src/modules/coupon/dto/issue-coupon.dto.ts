@@ -6,10 +6,12 @@ import { IsNotEmpty, IsNumber, Min } from 'class-validator';
  */
 export class IssueCouponDto {
   @IsNotEmpty({ message: '优惠券ID不能为空' })
+  @IsNumber({}, { message: '优惠券ID必须是数字' })
   couponId: number;
 
   @IsNotEmpty({ message: '用户ID不能为空' })
-  userId: string;
+  @IsNumber({}, { message: '用户ID必须是数字' })
+  userId: number;
 
   @IsNotEmpty({ message: '数量不能为空' })
   @IsNumber({}, { message: '数量必须是数字' })

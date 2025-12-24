@@ -56,15 +56,15 @@ export class ProductController {
   }
 
   // 根据ID获取单个产品
-  @Get(':productId')
-  async findOne(@Param('productId') productId: string) {
-    return this.productService.findById(productId);
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    return this.productService.findById(id);
   }
 
   // 根据分类获取产品
-  @Get('category/:categoryId')
+  @Get('category/:id')
   async findByCategory(
-    @Param('categoryId') categoryId: string,
+    @Param('id') id: number,
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
@@ -73,7 +73,7 @@ export class ProductController {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
     
-    const result = await this.productService.findByCategory(categoryId, finalLimit, finalOffset);
+    const result = await this.productService.findByCategory(id, finalLimit, finalOffset);
     
     return {
       list: result.list,
@@ -103,45 +103,45 @@ export class ProductController {
   }
 
   // 更新产品（需要认证）
-  @Put(':productId')
+  @Put(':id')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Param('productId') productId: string,
+    @Param('id') id: number,
     @Body() updateProductDto: UpdateProductDto
   ) {
-    return this.productService.update(productId, updateProductDto);
+    return this.productService.update(id, updateProductDto);
   }
 
   // 更新产品库存（需要认证）
-  @Put(':productId/stock')
+  @Put(':id/stock')
   @UseGuards(JwtAuthGuard)
   async updateStock(
-    @Param('productId') productId: string,
+    @Param('id') id: number,
     @Body('quantity') quantity: number,
     @Body('type') type?: 'purchase' | 'sale' | 'adjustment',
     @Body('operator') operator?: string,
     @Body('remark') remark?: string
   ) {
-    await this.productService.updateStock(productId, quantity, type, operator, remark);
+    await this.productService.updateStock(id, quantity, type, operator, remark);
     return { message: 'Stock updated successfully' };
   }
 
   // 调整产品库存（需要认证）
-  @Post(':productId/stock/adjust')
+  @Post(':id/stock/adjust')
   @UseGuards(JwtAuthGuard)
   async adjustStock(
-    @Param('productId') productId: string,
+    @Param('id') id: number,
     @Body() adjustStockDto: AdjustStockDto
   ) {
-    await this.productService.adjustStock(productId, adjustStockDto);
+    await this.productService.adjustStock(id, adjustStockDto);
     return { message: 'Stock adjusted successfully' };
   }
 
   // 获取产品库存历史记录（需要认证）
-  @Get(':productId/stock/history')
+  @Get(':id/stock/history')
   @UseGuards(JwtAuthGuard)
   async getStockHistory(
-    @Param('productId') productId: string,
+    @Param('id') id: number,
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
@@ -150,7 +150,7 @@ export class ProductController {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
     
-    const result = await this.productService.getStockHistory(productId, finalLimit, finalOffset);
+    const result = await this.productService.getStockHistory(id, finalLimit, finalOffset);
     
     return {
       list: result.list,
@@ -206,21 +206,21 @@ export class ProductController {
   }
 
   // 更新产品销量（需要认证）
-  @Put(':productId/sales')
+  @Put(':id/sales')
   @UseGuards(JwtAuthGuard)
   async updateSales(
-    @Param('productId') productId: string,
+    @Param('id') id: number,
     @Body('quantity') quantity: number
   ) {
-    await this.productService.updateSales(productId, quantity);
+    await this.productService.updateSales(id, quantity);
     return { message: 'Sales updated successfully' };
   }
 
   // 删除产品（需要认证）
-  @Delete(':productId')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async remove(@Param('productId') productId: string) {
-    await this.productService.remove(productId);
+  async remove(@Param('id') id: number) {
+    await this.productService.remove(id);
     return { message: 'Product deleted successfully' };
   }
 }
