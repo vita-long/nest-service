@@ -1,5 +1,20 @@
-import { IsOptional, MaxLength, IsEnum, IsNumber, Min, IsDate, IsJSON, IsArray, ArrayUnique, IsEmpty } from 'class-validator';
-import { CouponType, CouponSource, CouponStatus } from '../../../entities/coupons.entity';
+import {
+  IsOptional,
+  MaxLength,
+  IsEnum,
+  IsNumber,
+  Min,
+  IsDate,
+  IsJSON,
+  IsArray,
+  ArrayUnique,
+  IsEmpty,
+} from 'class-validator';
+import {
+  CouponType,
+  CouponSource,
+  CouponStatus,
+} from '../../../entities/coupons.entity';
 
 /**
  * 更新优惠券DTO

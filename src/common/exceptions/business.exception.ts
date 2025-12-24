@@ -1,21 +1,22 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorCode, ErrorCodeToHttpStatus, ErrorCodeToMessage } from '../types/exception';
+import {
+  ErrorCode,
+  ErrorCodeToHttpStatus,
+  ErrorCodeToMessage,
+} from '../types/exception';
 
 /**
  * 业务异常类，用于统一处理业务逻辑错误
  */
 export class BusinessException extends HttpException {
-  constructor(
-    errorCode: ErrorCode,
-    message?: string,
-    details?: any,
-  ) {
+  constructor(errorCode: ErrorCode, message?: string, details?: any) {
     // 获取对应的HTTP状态码
-    const statusCode = ErrorCodeToHttpStatus[errorCode] || HttpStatus.BAD_REQUEST;
-    
+    const statusCode =
+      ErrorCodeToHttpStatus[errorCode] || HttpStatus.BAD_REQUEST;
+
     // 如果没有提供自定义消息，使用默认消息
     const errorMessage = message || ErrorCodeToMessage[errorCode] || '未知错误';
-    
+
     // 构建异常响应对象
     const response = {
       code: errorCode,
@@ -23,7 +24,7 @@ export class BusinessException extends HttpException {
       details: details,
       timestamp: new Date().toISOString(),
     };
-    
+
     super(response, statusCode);
   }
 }
@@ -39,7 +40,7 @@ export class ValidationException extends HttpException {
       details: details,
       timestamp: new Date().toISOString(),
     };
-    
+
     super(response, HttpStatus.BAD_REQUEST);
   }
 }
@@ -54,7 +55,7 @@ export class ResourceNotFoundException extends HttpException {
       msg: `${resourceName}${resourceId ? ` (ID: ${resourceId})` : ''} 不存在`,
       timestamp: new Date().toISOString(),
     };
-    
+
     super(response, HttpStatus.NOT_FOUND);
   }
 }
@@ -69,7 +70,7 @@ export class PermissionException extends HttpException {
       msg: message || ErrorCodeToMessage[ErrorCode.PERMISSION_DENIED],
       timestamp: new Date().toISOString(),
     };
-    
+
     super(response, HttpStatus.FORBIDDEN);
   }
 }
@@ -78,13 +79,19 @@ export class PermissionException extends HttpException {
  * 认证异常
  */
 export class AuthException extends HttpException {
-  constructor(errorCode: ErrorCode.TOKEN_INVALID | ErrorCode.TOKEN_EXPIRED | ErrorCode.AUTH_FAILED = ErrorCode.AUTH_FAILED, message?: string) {
+  constructor(
+    errorCode:
+      | ErrorCode.TOKEN_INVALID
+      | ErrorCode.TOKEN_EXPIRED
+      | ErrorCode.AUTH_FAILED = ErrorCode.AUTH_FAILED,
+    message?: string,
+  ) {
     const response = {
       code: errorCode,
       msg: message || ErrorCodeToMessage[errorCode],
       timestamp: new Date().toISOString(),
     };
-    
+
     super(response, HttpStatus.UNAUTHORIZED);
   }
 }

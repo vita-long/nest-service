@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CouponService } from './coupon.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
@@ -46,26 +56,26 @@ export class CouponController {
     @Query('status') status?: CouponStatus,
     @Query('type') type?: CouponType,
     @Query('code') code?: string,
-    @Query('name') name?: string
+    @Query('name') name?: string,
   ) {
     // 如果提供了limit和offset，优先使用它们；否则根据page和pageSize计算
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
+
     const result = await this.couponService.findAll({
       limit: finalLimit,
       offset: finalOffset,
       status,
       type,
       code,
-      name
+      name,
     });
-    
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -100,7 +110,7 @@ export class CouponController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: number,
-    @Body() updateCouponDto: UpdateCouponDto
+    @Body() updateCouponDto: UpdateCouponDto,
   ) {
     return this.couponService.update(id, updateCouponDto);
   }
@@ -138,7 +148,7 @@ export class CouponController {
   @UseGuards(JwtAuthGuard)
   async findUserCoupons(
     @Query('userId') userId: number,
-    @Query('status') status?: CouponUseStatus
+    @Query('status') status?: CouponUseStatus,
   ) {
     return this.couponService.findUserCoupons(userId, status);
   }

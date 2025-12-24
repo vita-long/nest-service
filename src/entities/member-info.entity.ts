@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { MemberLevel } from './member-level.entity';
 
@@ -45,8 +53,6 @@ export class MemberInfo {
   @JoinColumn({ name: 'current_level_id' })
   currentLevel: MemberLevel;
 
-
-
   /**
    * 积分
    * 用户当前的积分，可用于兑换或抵扣
@@ -65,21 +71,37 @@ export class MemberInfo {
    * 免运费券余额
    * 用户当前持有的免运费券数量
    */
-  @Column({ name: 'free_shipping_tickets_balance', type: 'int', default: 0, comment: '免运费券余额' })
+  @Column({
+    name: 'free_shipping_tickets_balance',
+    type: 'int',
+    default: 0,
+    comment: '免运费券余额',
+  })
   freeShippingTicketsBalance: number;
 
   /**
    * 免费花束升级次数余额
    * 用户当前剩余的免费花束升级次数
    */
-  @Column({ name: 'free_bouquet_upgrades_balance', type: 'int', default: 0, comment: '免费花束升级次数余额' })
+  @Column({
+    name: 'free_bouquet_upgrades_balance',
+    type: 'int',
+    default: 0,
+    comment: '免费花束升级次数余额',
+  })
   freeBouquetUpgradesBalance: number;
 
   /**
    * 订阅状态
    * 用户当前的订阅状态
    */
-  @Column({ name: 'subscription_status', type: 'enum', enum: ['active', 'inactive', 'expired'], default: 'inactive', comment: '订阅状态' })
+  @Column({
+    name: 'subscription_status',
+    type: 'enum',
+    enum: ['active', 'inactive', 'expired'],
+    default: 'inactive',
+    comment: '订阅状态',
+  })
   subscriptionStatus: 'active' | 'inactive' | 'expired';
 
   /**

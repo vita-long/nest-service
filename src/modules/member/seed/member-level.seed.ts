@@ -11,7 +11,8 @@ import { MemberLevelConstants } from '../../../common/constants';
 @Injectable()
 export class MemberLevelSeed {
   constructor(
-    @InjectRepository(MemberLevel) private readonly memberLevelRepository: Repository<MemberLevel>,
+    @InjectRepository(MemberLevel)
+    private readonly memberLevelRepository: Repository<MemberLevel>,
   ) {}
 
   /**

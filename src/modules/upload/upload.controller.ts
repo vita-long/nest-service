@@ -1,4 +1,18 @@
-import { Controller, Post, Get, Delete, Param, UploadedFile, UploadedFiles, Query, Body, UseInterceptors, ParseFilePipe, MaxFileSizeValidator, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Param,
+  UploadedFile,
+  UploadedFiles,
+  Query,
+  Body,
+  UseInterceptors,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  UseGuards,
+} from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage, memoryStorage } from 'multer';
 import { extname, join } from 'path';
@@ -20,9 +34,11 @@ export class UploadController {
    */
   @Post('single')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file', {
-    storage: memoryStorage(),
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+    }),
+  )
   async uploadSingleFile(
     @UploadedFile(
       new ParseFilePipe({
@@ -30,41 +46,51 @@ export class UploadController {
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
         ],
         fileIsRequired: true,
-      })
-    ) file: Express.Multer.File,
+      }),
+    )
+    file: Express.Multer.File,
     @GetCurrentUser('userId') userId: string,
-    @Body('type') type?: string
+    @Body('type') type?: string,
   ) {
     console.log('upload type:', type);
     // 使用默认值'default'
-    const uploadType = (type || 'default') as 'default' | 'image' | 'document' | 'audio' | 'video';
-    
+    const uploadType = (type || 'default') as
+      | 'default'
+      | 'image'
+      | 'document'
+      | 'audio'
+      | 'video';
+
     // 确保上传目录存在
     const uploadDir = join(__dirname, '..', '..', '..', 'uploads', uploadType);
     if (!existsSync(uploadDir)) {
       mkdirSync(uploadDir, { recursive: true });
     }
-    
+
     // 生成文件名
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const filename = `${uniqueSuffix}${extname(file.originalname)}`;
     const filePath = join(uploadDir, filename);
-    
+
     // 将文件从内存写入到磁盘
     await writeFile(filePath, file.buffer);
-    
+
     // 更新file对象
     const updatedFile = {
       ...file,
       filename,
       path: filePath,
     };
-    
-    const result = await this.uploadService.handleSingleUpload(updatedFile, uploadType, userId);
-    
+
+    const result = await this.uploadService.handleSingleUpload(
+      updatedFile,
+      uploadType,
+      userId,
+    );
+
     // 添加访问URL
     result['url'] = this.uploadService.getFileUrl(result.filename, uploadType);
-    
+
     return result;
   }
 
@@ -77,9 +103,12 @@ export class UploadController {
    */
   @Post('batch')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FilesInterceptor('files', 10, { // 默认限制10个文件
-    storage: memoryStorage(),
-  }))
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      // 默认限制10个文件
+      storage: memoryStorage(),
+    }),
+  )
   async uploadBatchFiles(
     @UploadedFiles(
       new ParseFilePipe({
@@ -87,11 +116,12 @@ export class UploadController {
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB 每个文件
         ],
         fileIsRequired: true,
-      })
-    ) files: Array<Express.Multer.File>,
+      }),
+    )
+    files: Array<Express.Multer.File>,
     @GetCurrentUser('userId') userId: string,
     @Body('type') bodyType?: string,
-    @Query('limit') limit?: string
+    @Query('limit') limit?: string,
   ) {
     // 优先从查询参数获取type，如果没有则从请求体获取
     const type = bodyType;
@@ -107,14 +137,19 @@ export class UploadController {
     }
 
     // 使用默认值'default'
-    const uploadType = (type || 'default') as 'default' | 'image' | 'document' | 'audio' | 'video';
-    
+    const uploadType = (type || 'default') as
+      | 'default'
+      | 'image'
+      | 'document'
+      | 'audio'
+      | 'video';
+
     // 确保上传目录存在
     const uploadDir = join(__dirname, '..', '..', '..', 'uploads', uploadType);
     if (!existsSync(uploadDir)) {
       mkdirSync(uploadDir, { recursive: true });
     }
-    
+
     // 处理每个文件
     const updatedFiles: Express.Multer.File[] = [];
     for (const file of files) {
@@ -122,10 +157,10 @@ export class UploadController {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       const filename = `${uniqueSuffix}${extname(file.originalname)}`;
       const filePath = join(uploadDir, filename);
-      
+
       // 将文件从内存写入到磁盘
       await writeFile(filePath, file.buffer);
-      
+
       // 更新file对象
       updatedFiles.push({
         ...file,
@@ -133,12 +168,16 @@ export class UploadController {
         path: filePath,
       });
     }
-    
-    const result = await this.uploadService.handleBatchUpload(updatedFiles, uploadType, userId);
-    
+
+    const result = await this.uploadService.handleBatchUpload(
+      updatedFiles,
+      uploadType,
+      userId,
+    );
+
     // 为成功上传的文件添加访问URL
     if (result.data) {
-      result.data = result.data.map(file => ({
+      result.data = result.data.map((file) => ({
         ...file,
         url: this.uploadService.getFileUrl(file.filename, uploadType),
       }));
@@ -146,7 +185,7 @@ export class UploadController {
 
     return {
       status: result.success ? 'success' : 'partial',
-      message: result.success 
+      message: result.success
         ? `成功上传 ${result.data?.length || 0} 个文件`
         : `部分文件上传失败。成功: ${result.data?.length || 0}, 失败: ${result.errors?.length || 0}`,
       data: result,
@@ -162,15 +201,15 @@ export class UploadController {
   @Get('images')
   async getImages(
     @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10'
+    @Query('limit') limit: string = '10',
   ) {
     // 转换参数为数字
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
-    
+
     // 调用服务层方法获取图片列表
     const result = await this.uploadService.getImages(pageNum, limitNum);
-    
+
     return result;
   }
 
@@ -193,5 +232,4 @@ export class UploadController {
   async batchDeleteFiles(@Body() body: { resourceIds: string[] }) {
     return await this.uploadService.batchDeleteFiles(body.resourceIds);
   }
-
 }

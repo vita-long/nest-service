@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { MemberLevel } from './member-level.entity';
 
@@ -19,7 +27,12 @@ export class MemberSubscription {
    * 订阅ID
    * 自定义生成的订阅标识
    */
-  @Column({ name: 'subscription_id', unique: true, nullable: false, comment: '订阅ID' })
+  @Column({
+    name: 'subscription_id',
+    unique: true,
+    nullable: false,
+    comment: '订阅ID',
+  })
   subscriptionId: string;
 
   /**
@@ -70,21 +83,40 @@ export class MemberSubscription {
    * 订阅价格
    * 实际支付的订阅价格
    */
-  @Column({ name: 'price', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '订阅价格' })
+  @Column({
+    name: 'price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '订阅价格',
+  })
   price: number;
 
   /**
    * 支付状态
    * 订阅的支付状态：unpaid(未支付)、paid(已支付)、refunded(已退款)
    */
-  @Column({ name: 'payment_status', type: 'enum', enum: ['unpaid', 'paid', 'refunded'], default: 'unpaid', comment: '支付状态' })
+  @Column({
+    name: 'payment_status',
+    type: 'enum',
+    enum: ['unpaid', 'paid', 'refunded'],
+    default: 'unpaid',
+    comment: '支付状态',
+  })
   paymentStatus: 'unpaid' | 'paid' | 'refunded';
 
   /**
    * 订阅状态
    * 订阅的当前状态：active(激活)、expired(过期)、cancelled(已取消)
    */
-  @Column({ name: 'status', type: 'enum', enum: ['active', 'expired', 'cancelled'], default: 'active', comment: '订阅状态' })
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: ['active', 'expired', 'cancelled'],
+    default: 'active',
+    comment: '订阅状态',
+  })
   status: 'active' | 'expired' | 'cancelled';
 
   /**

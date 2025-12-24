@@ -1,4 +1,15 @@
-import { IsNotEmpty, IsNumber, Min, IsOptional, IsObject, ValidateNested, IsString, IsArray, IsUUID, ValidateIf } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  Min,
+  IsOptional,
+  IsObject,
+  ValidateNested,
+  IsString,
+  IsArray,
+  IsUUID,
+  ValidateIf,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // 产品信息验证类

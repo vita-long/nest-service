@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 import { MemberService } from './member.service';
@@ -44,7 +55,10 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Patch('levels/:id')
-  updateMemberLevel(@Param('id') id: number, @Body() updateMemberLevelDto: UpdateMemberLevelDto) {
+  updateMemberLevel(
+    @Param('id') id: number,
+    @Body() updateMemberLevelDto: UpdateMemberLevelDto,
+  ) {
     return this.memberService.updateMemberLevel(id, updateMemberLevelDto);
   }
 
@@ -58,7 +72,6 @@ export class MemberController {
     return this.memberService.deleteMemberLevel(id);
   }
 
-
   /**
    * 获取所有会员信息（分页）
    * @param page 页码
@@ -67,7 +80,10 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('list')
-  getMemberInfoList(@Query('page') page: string, @Query('limit') limit: string) {
+  getMemberInfoList(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
     return this.memberService.getMemberInfo(
       page ? +page : 1,
       limit ? +limit : 10,
@@ -96,8 +112,6 @@ export class MemberController {
     return this.memberService.adjustPoints(adjustPointsDto);
   }
 
-
-
   /**
    * 调整会员状态
    * @param userId 用户ID
@@ -119,7 +133,11 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('points/history')
-  getPointsHistory(@Request() req, @Query('page') page: string, @Query('limit') limit: string) {
+  getPointsHistory(
+    @Request() req,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
     return this.memberService.getPointsHistory(
       req.user.id,
       page ? +page : 1,
@@ -148,7 +166,11 @@ export class MemberController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('subscriptions')
-  getMemberSubscriptions(@Request() req, @Query('page') page: string, @Query('limit') limit: string) {
+  getMemberSubscriptions(
+    @Request() req,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
     return this.memberService.getMemberSubscriptions(
       req.user.id,
       page ? +page : 1,

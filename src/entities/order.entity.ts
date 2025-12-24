@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { User } from './user.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderDiscount } from './order-discount.entity';
@@ -28,28 +37,55 @@ export class Order {
    * 商品总金额
    * 订单中所有商品的总金额（不含优惠）
    */
-  @Column({ name: 'goods_amount', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '商品总金额' })
+  @Column({
+    name: 'goods_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '商品总金额',
+  })
   goodsAmount: number;
 
   /**
    * 优惠总金额
    * 订单中所有优惠的总金额
    */
-  @Column({ name: 'discount_amount', type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false, comment: '优惠总金额' })
+  @Column({
+    name: 'discount_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    nullable: false,
+    comment: '优惠总金额',
+  })
   discountAmount: number;
 
   /**
    * 订单总金额
    * 订单的最终支付金额（商品总金额 - 优惠总金额）
    */
-  @Column({ name: 'total_amount', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '订单总金额' })
+  @Column({
+    name: 'total_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '订单总金额',
+  })
   totalAmount: number;
 
   /**
    * 订单状态
    * 订单的当前状态：待支付、已支付、已发货、已完成、已取消
    */
-  @Column({ name: 'status', default: 'pending', comment: '订单状态：pending-待支付, paid-已支付, shipped-已发货, completed-已完成, cancelled-已取消' })
+  @Column({
+    name: 'status',
+    default: 'pending',
+    comment:
+      '订单状态：pending-待支付, paid-已支付, shipped-已发货, completed-已完成, cancelled-已取消',
+  })
   status: string;
 
   /**
@@ -70,7 +106,12 @@ export class Order {
    * 收货地址
    * 订单的收货地址信息，JSON格式存储
    */
-  @Column({ name: 'shipping_address', type: 'json', nullable: true, comment: '收货地址' })
+  @Column({
+    name: 'shipping_address',
+    type: 'json',
+    nullable: true,
+    comment: '收货地址',
+  })
   shippingAddress?: {
     name: string; // 收货人
     phone: string; // 收货人手机号

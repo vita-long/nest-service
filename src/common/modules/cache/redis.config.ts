@@ -23,9 +23,11 @@ const redisConfig = registerAs('redis', () => ({
  * @param config Redis配置对象
  * @returns Redis客户端选项
  */
-export const createRedisClientOptions = (config: ReturnType<typeof redisConfig>): RedisClientOptions => {
+export const createRedisClientOptions = (
+  config: ReturnType<typeof redisConfig>,
+): RedisClientOptions => {
   // 构建Redis连接URL
-  const url = config.password 
+  const url = config.password
     ? `redis://:${config.password}@${config.host}:${config.port}/${config.db}`
     : `redis://${config.host}:${config.port}/${config.db}`;
 

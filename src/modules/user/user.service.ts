@@ -9,7 +9,9 @@ import { uuidv7 } from 'uuidv7';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
 
   // 不再需要自定义生成用户ID，使用数据库自增id
 
@@ -25,7 +27,7 @@ export class UserService {
   async findAllUser(): Promise<Partial<User>[]> {
     const users = await this.userRepository.find();
     // Remove password from response
-    return users.map(user => {
+    return users.map((user) => {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
     });
@@ -41,9 +43,12 @@ export class UserService {
     return userWithoutPassword;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<Partial<User>> {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<Partial<User>> {
     const updateData: any = { ...updateUserDto };
-    
+
     // Hash password if provided
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
@@ -51,11 +56,11 @@ export class UserService {
 
     await this.userRepository.update({ id }, updateData);
     const updatedUser = await this.userRepository.findOneBy({ id });
-    
+
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    
+
     // Remove password from response
     const { password, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;

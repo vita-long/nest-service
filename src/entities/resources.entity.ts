@@ -1,4 +1,11 @@
-import { Column, PrimaryGeneratedColumn, Entity, CreateDateColumn, UpdateDateColumn, Index } from "typeorm";
+import {
+  Column,
+  PrimaryGeneratedColumn,
+  Entity,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+} from 'typeorm';
 
 /**
  * 资源实体类
@@ -17,7 +24,12 @@ export class Resources {
    * 资源ID
    * 自定义生成的资源标识
    */
-  @Column({ name: 'resource_id', unique: true, nullable: false, comment: '资源ID' })
+  @Column({
+    name: 'resource_id',
+    unique: true,
+    nullable: false,
+    comment: '资源ID',
+  })
   resourceId: string;
 
   /**

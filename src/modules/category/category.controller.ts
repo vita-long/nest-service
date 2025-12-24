@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -18,9 +28,7 @@ export class CategoryController {
 
   // 获取所有激活的分类（公开接口）
   @Get('active')
-  async findActive(
-    @Query('type') type?: CategoryType,
-  ) {
+  async findActive(@Query('type') type?: CategoryType) {
     return this.categoryService.findActive(type);
   }
 
@@ -54,7 +62,7 @@ export class CategoryController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: number,
-    @Body() updateCategoryDto: UpdateCategoryDto
+    @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
     return this.categoryService.update(id, updateCategoryDto);
   }

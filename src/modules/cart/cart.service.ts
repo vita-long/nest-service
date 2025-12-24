@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Cart } from '../../entities/cart.entity';
-import { CreateCartDto, UpdateCartDto, BatchUpdateCartDto } from './dto/cart.dto';
+import {
+  CreateCartDto,
+  UpdateCartDto,
+  BatchUpdateCartDto,
+} from './dto/cart.dto';
 import { User } from '../../entities/user.entity';
 import { Product } from '../../entities/product.entity';
 
@@ -36,7 +44,10 @@ export class CartService {
    * @param createCartDto 创建购物车的数据传输对象
    * @returns 创建的购物车对象，product属性已平铺到外层
    */
-  async addToCart(userId: number, createCartDto: CreateCartDto): Promise<CartListItem> {
+  async addToCart(
+    userId: number,
+    createCartDto: CreateCartDto,
+  ): Promise<CartListItem> {
     // 验证用户是否存在
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
@@ -44,7 +55,9 @@ export class CartService {
     }
 
     // 验证商品是否存在
-    const product = await this.productRepository.findOneBy({ id: createCartDto.id });
+    const product = await this.productRepository.findOneBy({
+      id: createCartDto.id,
+    });
     if (!product) {
       throw new NotFoundException(`商品不存在`);
     }
@@ -61,8 +74,10 @@ export class CartService {
     if (existingCart) {
       // 如果已存在，更新数量
       existingCart.quantity += createCartDto.quantity || 1;
-      existingCart.specifications = createCartDto.specifications || existingCart.specifications;
-      existingCart.isSelected = createCartDto.isSelected || existingCart.isSelected;
+      existingCart.specifications =
+        createCartDto.specifications || existingCart.specifications;
+      existingCart.isSelected =
+        createCartDto.isSelected || existingCart.isSelected;
       existingCart.price = createCartDto.price || product.price;
       savedCart = await this.cartRepository.save(existingCart);
     } else {
@@ -120,7 +135,7 @@ export class CartService {
     });
 
     // 将product属性平铺到外层
-    return carts.map(cart => {
+    return carts.map((cart) => {
       const { product: cartProduct, ...cartData } = cart;
       return {
         ...cartData,
@@ -140,7 +155,11 @@ export class CartService {
    * @param updateCartDto 更新购物车的数据传输对象
    * @returns 更新后的购物车对象，product属性已平铺到外层
    */
-  async updateCart(userId: number, cartId: number, updateCartDto: UpdateCartDto): Promise<CartListItem> {
+  async updateCart(
+    userId: number,
+    cartId: number,
+    updateCartDto: UpdateCartDto,
+  ): Promise<CartListItem> {
     // 验证购物车是否存在且属于该用户
     let cart = await this.cartRepository.findOne({
       where: {
@@ -187,7 +206,10 @@ export class CartService {
    * @param batchUpdateCartDto 批量更新购物车的数据传输对象
    * @returns 更新结果
    */
-  async batchUpdateCart(userId: number, batchUpdateCartDto: BatchUpdateCartDto): Promise<{ success: boolean; message: string }> {
+  async batchUpdateCart(
+    userId: number,
+    batchUpdateCartDto: BatchUpdateCartDto,
+  ): Promise<{ success: boolean; message: string }> {
     // 验证购物车是否存在且属于该用户
     const carts = await this.cartRepository.find({
       where: {
@@ -210,7 +232,10 @@ export class CartService {
       throw new BadRequestException(`批量更新购物车商品失败`);
     }
 
-    return { success: true, message: `成功更新 ${updateResult.affected} 个购物车商品` };
+    return {
+      success: true,
+      message: `成功更新 ${updateResult.affected} 个购物车商品`,
+    };
   }
 
   /**
@@ -219,7 +244,10 @@ export class CartService {
    * @param cartId 购物车ID
    * @returns 删除结果
    */
-  async removeCart(userId: number, cartId: number): Promise<{ success: boolean; message: string }> {
+  async removeCart(
+    userId: number,
+    cartId: number,
+  ): Promise<{ success: boolean; message: string }> {
     // 验证购物车是否存在且属于该用户
     const cart = await this.cartRepository.findOne({
       where: {
@@ -246,7 +274,9 @@ export class CartService {
    * @param userId 用户ID
    * @returns 清空结果
    */
-  async clearCart(userId: number): Promise<{ success: boolean; message: string }> {
+  async clearCart(
+    userId: number,
+  ): Promise<{ success: boolean; message: string }> {
     // 验证用户是否存在
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
@@ -254,7 +284,9 @@ export class CartService {
     }
 
     // 清空购物车
-    const deleteResult = await this.cartRepository.delete({ user: { id: userId } });
+    const deleteResult = await this.cartRepository.delete({
+      user: { id: userId },
+    });
     if (deleteResult.affected === 0) {
       throw new BadRequestException(`清空购物车失败`);
     }

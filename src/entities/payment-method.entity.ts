@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 /**
  * 支付方式实体
@@ -16,7 +22,12 @@ export class PaymentMethod {
    * 支付方式代码
    * 唯一标识，如：alipay, wechatpay, unionpay
    */
-  @Column({ name: 'code', unique: true, nullable: false, comment: '支付方式代码' })
+  @Column({
+    name: 'code',
+    unique: true,
+    nullable: false,
+    comment: '支付方式代码',
+  })
   code: string;
 
   /**

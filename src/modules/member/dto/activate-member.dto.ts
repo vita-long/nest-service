@@ -6,7 +6,7 @@ import { IsNumber, IsNotEmpty, IsEnum } from 'class-validator';
 export enum ActiveStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
-  EXPIRED = 'expired'
+  EXPIRED = 'expired',
 }
 /**
  * 激活会员状态的数据传输对象

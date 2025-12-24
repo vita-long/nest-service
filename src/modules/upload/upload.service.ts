@@ -32,12 +32,19 @@ export class UploadService {
    * @param type 上传类型
    * @returns 是否允许
    */
-  private validateFileType(file: MulterFile, type: keyof typeof this.allowedFileTypes): boolean {
+  private validateFileType(
+    file: MulterFile,
+    type: keyof typeof this.allowedFileTypes,
+  ): boolean {
     const fileExtension = extname(file.originalname).toLowerCase();
-    const allowedExtensions = this.allowedFileTypes[type] || this.allowedFileTypes.default;
-    
+    const allowedExtensions =
+      this.allowedFileTypes[type] || this.allowedFileTypes.default;
+
     // 如果允许的类型为空数组，则允许所有类型
-    return allowedExtensions.length === 0 || allowedExtensions.some(ext => ext === fileExtension);
+    return (
+      allowedExtensions.length === 0 ||
+      allowedExtensions.some((ext) => ext === fileExtension)
+    );
   }
 
   /**
@@ -52,7 +59,11 @@ export class UploadService {
     return `${prefixId}${Date.now()}${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  async handleSingleUpload(file: MulterFile, type: keyof typeof this.allowedFileTypes, userId: string): Promise<{
+  async handleSingleUpload(
+    file: MulterFile,
+    type: keyof typeof this.allowedFileTypes,
+    userId: string,
+  ): Promise<{
     filename: string;
     originalname: string;
     path: string;
@@ -66,20 +77,21 @@ export class UploadService {
       if (!userId) {
         throw new BusinessException(
           ErrorCode.UNAUTHORIZED,
-          '请先登录再进行上传操作'
+          '请先登录再进行上传操作',
         );
       }
-      
+
       // 验证文件类型
       if (type && !this.validateFileType(file, type)) {
         // 如果文件类型不允许，删除已上传的文件
         if (file.path && existsSync(file.path)) {
           unlinkSync(file.path);
         }
-        const allowedTypes = this.allowedFileTypes[type as keyof typeof this.allowedFileTypes]?.join(', ') || '所有类型';
+        const allowedTypes =
+          this.allowedFileTypes[type]?.join(', ') || '所有类型';
         throw new BusinessException(
           ErrorCode.FILE_TYPE_INVALID,
-          `文件类型不允许上传。允许的类型: ${allowedTypes}`
+          `文件类型不允许上传。允许的类型: ${allowedTypes}`,
         );
       }
 
@@ -119,7 +131,7 @@ export class UploadService {
           console.error('Failed to delete file after error:', unlinkError);
         }
       }
-      
+
       // 重新抛出错误或转换为适当的HTTP异常
       if (error instanceof BusinessException) {
         throw error;
@@ -127,7 +139,7 @@ export class UploadService {
       throw new BusinessException(
         ErrorCode.FILE_UPLOAD_ERROR,
         '文件上传失败: ' + error.message,
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
   }
@@ -138,7 +150,11 @@ export class UploadService {
    * @param type 上传类型
    * @returns 上传结果数组
    */
-  async handleBatchUpload(files: MulterFile[], type: keyof typeof this.allowedFileTypes, userId: string): Promise<{
+  async handleBatchUpload(
+    files: MulterFile[],
+    type: keyof typeof this.allowedFileTypes,
+    userId: string,
+  ): Promise<{
     success: boolean;
     data?: Array<{
       filename: string;
@@ -154,7 +170,7 @@ export class UploadService {
       error: string;
     }>;
   }> {
-    const results = { 
+    const results = {
       success: true,
       data: [] as Array<{
         filename: string;
@@ -168,7 +184,7 @@ export class UploadService {
       errors: [] as Array<{
         originalname: string;
         error: string;
-      }>
+      }>,
     };
 
     // 逐个处理文件
@@ -178,39 +194,40 @@ export class UploadService {
         if (!userId) {
           results.errors.push({
             originalname: file.originalname,
-            error: '请先登录再进行上传操作'
+            error: '请先登录再进行上传操作',
           });
           results.success = false;
           continue;
         }
-        
+
         // 验证文件类型
         if (type && !this.validateFileType(file, type)) {
           // 如果文件类型不允许，删除已上传的文件
           if (file.path && existsSync(file.path)) {
             unlinkSync(file.path);
           }
-          const allowedTypes = this.allowedFileTypes[type as keyof typeof this.allowedFileTypes]?.join(', ') || '所有类型';
+          const allowedTypes =
+            this.allowedFileTypes[type]?.join(', ') || '所有类型';
           results.errors.push({
             originalname: file.originalname,
-            error: `文件类型不允许上传。允许的类型: ${allowedTypes}`
+            error: `文件类型不允许上传。允许的类型: ${allowedTypes}`,
           });
           results.success = false;
           continue;
         }
 
         // 创建资源实体
-      const resource = new Resources();
-      resource.name = file.originalname;
-      resource.originalName = file.originalname;
-      resource.path = file.path;
-      resource.type = type || 'default';
-      resource.format = extname(file.originalname).substring(1).toLowerCase(); // 移除点号
-      resource.size = file.size;
-      resource.status = 1; // 默认启用
-      resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
-      resource.mimetype = file.mimetype; // 存储MIME类型
-      // userId可以在需要时设置，当前保持为null
+        const resource = new Resources();
+        resource.name = file.originalname;
+        resource.originalName = file.originalname;
+        resource.path = file.path;
+        resource.type = type || 'default';
+        resource.format = extname(file.originalname).substring(1).toLowerCase(); // 移除点号
+        resource.size = file.size;
+        resource.status = 1; // 默认启用
+        resource.resourceId = this.generateResourceId(); // 自定义生成资源ID
+        resource.mimetype = file.mimetype; // 存储MIME类型
+        // userId可以在需要时设置，当前保持为null
 
         // 保存到数据库
         const savedResource = await this.resourcesRepository.save(resource);
@@ -238,7 +255,7 @@ export class UploadService {
         // 添加到错误列表
         results.errors.push({
           originalname: file.originalname,
-          error: error.message || '文件处理失败'
+          error: error.message || '文件处理失败',
         });
         results.success = false;
       }
@@ -253,7 +270,10 @@ export class UploadService {
    * @param type 文件类型目录
    * @returns 访问URL
    */
-  getFileUrl(filename: string, type?: keyof typeof this.allowedFileTypes): string {
+  getFileUrl(
+    filename: string,
+    type?: keyof typeof this.allowedFileTypes,
+  ): string {
     return `http://localhost:3012/uploads/${type || 'default'}/${filename}`;
   }
 
@@ -267,24 +287,32 @@ export class UploadService {
       // 先从数据库中查找资源记录
       const resource = await this.resourcesRepository.findOne({
         where: {
-          resourceId: resourceId
-        }
+          resourceId: resourceId,
+        },
       });
-      
+
       if (!resource) {
         throw new BusinessException(ErrorCode.FILE_NOT_FOUND, '文件不存在');
       }
-      
+
       // 标记为已删除
       resource.status = 2;
       await this.resourcesRepository.save(resource);
-      
+
       // 构建文件路径并删除实际文件
-      const filePath = join(__dirname, '..', '..', '..', 'uploads', resource.type || 'default', resource.name);
+      const filePath = join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'uploads',
+        resource.type || 'default',
+        resource.name,
+      );
       if (existsSync(filePath)) {
         unlinkSync(filePath);
       }
-      
+
       return true;
     } catch (error) {
       console.error('Failed to delete file:', error);
@@ -311,27 +339,27 @@ export class UploadService {
         return {
           success: false,
           deletedCount: 0,
-          message: '请提供有效的资源ID列表'
+          message: '请提供有效的资源ID列表',
         };
       }
 
       // 查找所有资源记录
       const resources = await this.resourcesRepository.find({
         where: {
-          resourceId: In(resourceIds)
-        }
+          resourceId: In(resourceIds),
+        },
       });
 
       if (resources.length === 0) {
         return {
           success: false,
           deletedCount: 0,
-          message: '未找到任何资源'
+          message: '未找到任何资源',
         };
       }
 
       // 标记为已删除
-      const updatedResources = resources.map(resource => {
+      const updatedResources = resources.map((resource) => {
         resource.status = 2;
         return resource;
       });
@@ -342,7 +370,15 @@ export class UploadService {
       const failedIds: string[] = [];
       for (const resource of resources) {
         try {
-          const filePath = join(__dirname, '..', '..', '..', 'uploads', resource.type || 'default', resource.name);
+          const filePath = join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            'uploads',
+            resource.type || 'default',
+            resource.name,
+          );
           if (existsSync(filePath)) {
             unlinkSync(filePath);
           }
@@ -355,14 +391,16 @@ export class UploadService {
       return {
         success: failedIds.length === 0,
         deletedCount: resources.length - failedIds.length,
-        failedIds: failedIds.length > 0 ? failedIds : undefined
+        failedIds: failedIds.length > 0 ? failedIds : undefined,
       };
     } catch (error) {
       console.error('Failed to batch delete files:', error);
       return {
         success: false,
         deletedCount: 0,
-        message: '批量删除失败: ' + (error instanceof Error ? error.message : '未知错误')
+        message:
+          '批量删除失败: ' +
+          (error instanceof Error ? error.message : '未知错误'),
       };
     }
   }
@@ -377,27 +415,27 @@ export class UploadService {
     // 验证参数
     if (page < 1) page = 1;
     if (limit < 1 || limit > 100) limit = 10;
-    
+
     const skip = (page - 1) * limit;
-    
+
     // 查询启用状态的图片资源
     const [images, total] = await this.resourcesRepository.findAndCount({
       where: {
         type: 'image',
-        status: 1 // 仅查询启用状态的图片
+        status: 1, // 仅查询启用状态的图片
       },
       order: {
-        createdAt: 'DESC' // 按创建时间倒序排列
+        createdAt: 'DESC', // 按创建时间倒序排列
       },
       skip,
-      take: limit
+      take: limit,
     });
-    
+
     return {
       list: images,
       current: page,
       pageSize: limit,
-      total
+      total,
     };
   }
 }

@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,10 +24,14 @@ import { MemberLevelConstants } from '@/common/constants';
 @Injectable()
 export class MemberService {
   constructor(
-    @InjectRepository(MemberLevel) private memberLevelRepository: Repository<MemberLevel>,
-    @InjectRepository(MemberInfo) private memberInfoRepository: Repository<MemberInfo>,
-    @InjectRepository(PointsHistory) private pointsHistoryRepository: Repository<PointsHistory>,
-    @InjectRepository(MemberSubscription) private memberSubscriptionRepository: Repository<MemberSubscription>,
+    @InjectRepository(MemberLevel)
+    private memberLevelRepository: Repository<MemberLevel>,
+    @InjectRepository(MemberInfo)
+    private memberInfoRepository: Repository<MemberInfo>,
+    @InjectRepository(PointsHistory)
+    private pointsHistoryRepository: Repository<PointsHistory>,
+    @InjectRepository(MemberSubscription)
+    private memberSubscriptionRepository: Repository<MemberSubscription>,
   ) {}
 
   /**
@@ -31,7 +39,9 @@ export class MemberService {
    * @param createMemberLevelDto 创建会员等级的数据
    * @returns 创建的会员等级
    */
-  async createMemberLevel(createMemberLevelDto: CreateMemberLevelDto): Promise<MemberLevel> {
+  async createMemberLevel(
+    createMemberLevelDto: CreateMemberLevelDto,
+  ): Promise<MemberLevel> {
     // 检查等级标识是否已存在
     const existingLevel = await this.memberLevelRepository.findOne({
       where: { code: createMemberLevelDto.code },
@@ -89,11 +99,17 @@ export class MemberService {
    * @param updateMemberLevelDto 更新会员等级的数据
    * @returns 更新后的会员等级
    */
-  async updateMemberLevel(id: number, updateMemberLevelDto: UpdateMemberLevelDto): Promise<MemberLevel> {
+  async updateMemberLevel(
+    id: number,
+    updateMemberLevelDto: UpdateMemberLevelDto,
+  ): Promise<MemberLevel> {
     const memberLevel = await this.getMemberLevelById(id);
 
     // 如果更新等级标识，检查是否已存在
-    if (updateMemberLevelDto.code && updateMemberLevelDto.code !== memberLevel.code) {
+    if (
+      updateMemberLevelDto.code &&
+      updateMemberLevelDto.code !== memberLevel.code
+    ) {
       const existingLevel = await this.memberLevelRepository.findOne({
         where: { code: updateMemberLevelDto.code },
       });
@@ -105,17 +121,32 @@ export class MemberService {
     }
 
     // 更新其他属性
-    if (updateMemberLevelDto.name !== undefined) memberLevel.name = updateMemberLevelDto.name;
-    if (updateMemberLevelDto.subscriptionPrice !== undefined) memberLevel.subscriptionPrice = updateMemberLevelDto.subscriptionPrice;
-    if (updateMemberLevelDto.subscriptionDiscount !== undefined) memberLevel.subscriptionDiscount = updateMemberLevelDto.subscriptionDiscount;
-    if (updateMemberLevelDto.validityPeriod !== undefined) memberLevel.validityPeriod = updateMemberLevelDto.validityPeriod;
-    if (updateMemberLevelDto.discountRate !== undefined) memberLevel.discountRate = updateMemberLevelDto.discountRate;
-    if (updateMemberLevelDto.freeShippingTickets !== undefined) memberLevel.freeShippingTickets = updateMemberLevelDto.freeShippingTickets;
-    if (updateMemberLevelDto.unlimitedFreeShipping !== undefined) memberLevel.unlimitedFreeShipping = updateMemberLevelDto.unlimitedFreeShipping;
-    if (updateMemberLevelDto.freeBouquetUpgrades !== undefined) memberLevel.freeBouquetUpgrades = updateMemberLevelDto.freeBouquetUpgrades;
-    if (updateMemberLevelDto.holidayGifts !== undefined) memberLevel.holidayGifts = updateMemberLevelDto.holidayGifts;
-    if (updateMemberLevelDto.description !== undefined) memberLevel.description = updateMemberLevelDto.description;
-    if (updateMemberLevelDto.isActive !== undefined) memberLevel.isActive = updateMemberLevelDto.isActive;
+    if (updateMemberLevelDto.name !== undefined)
+      memberLevel.name = updateMemberLevelDto.name;
+    if (updateMemberLevelDto.subscriptionPrice !== undefined)
+      memberLevel.subscriptionPrice = updateMemberLevelDto.subscriptionPrice;
+    if (updateMemberLevelDto.subscriptionDiscount !== undefined)
+      memberLevel.subscriptionDiscount =
+        updateMemberLevelDto.subscriptionDiscount;
+    if (updateMemberLevelDto.validityPeriod !== undefined)
+      memberLevel.validityPeriod = updateMemberLevelDto.validityPeriod;
+    if (updateMemberLevelDto.discountRate !== undefined)
+      memberLevel.discountRate = updateMemberLevelDto.discountRate;
+    if (updateMemberLevelDto.freeShippingTickets !== undefined)
+      memberLevel.freeShippingTickets =
+        updateMemberLevelDto.freeShippingTickets;
+    if (updateMemberLevelDto.unlimitedFreeShipping !== undefined)
+      memberLevel.unlimitedFreeShipping =
+        updateMemberLevelDto.unlimitedFreeShipping;
+    if (updateMemberLevelDto.freeBouquetUpgrades !== undefined)
+      memberLevel.freeBouquetUpgrades =
+        updateMemberLevelDto.freeBouquetUpgrades;
+    if (updateMemberLevelDto.holidayGifts !== undefined)
+      memberLevel.holidayGifts = updateMemberLevelDto.holidayGifts;
+    if (updateMemberLevelDto.description !== undefined)
+      memberLevel.description = updateMemberLevelDto.description;
+    if (updateMemberLevelDto.isActive !== undefined)
+      memberLevel.isActive = updateMemberLevelDto.isActive;
 
     return await this.memberLevelRepository.save(memberLevel);
   }
@@ -135,16 +166,19 @@ export class MemberService {
    * @param limit 每页数量
    * @returns 会员信息列表和总数
    */
-  async getMemberInfo(page: number = 1, limit: number = 10): Promise<{ list: MemberInfo[]; total: number }> {
+  async getMemberInfo(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ list: MemberInfo[]; total: number }> {
     const [data, total] = await this.memberInfoRepository.findAndCount({
       relations: ['currentLevel', 'user'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
-    data.forEach(item => {
+    data.forEach((item) => {
       Reflect.deleteProperty(item.user, 'password');
-    })
+    });
     return { list: data, total };
   }
 
@@ -233,7 +267,8 @@ export class MemberService {
       type,
       reason,
       amount,
-      previousPoints: memberInfo.points - (type === 'increase' ? amount : -amount),
+      previousPoints:
+        memberInfo.points - (type === 'increase' ? amount : -amount),
       currentPoints: newPoints,
     });
 
@@ -244,15 +279,16 @@ export class MemberService {
     return memberInfo;
   }
 
-
-
   /**
    * 订阅会员服务
    * @param userId 用户ID
    * @param levelId 会员等级ID
    * @returns 会员订阅信息
    */
-  async subscribeMember(userId: number, levelId: number): Promise<MemberSubscription> {
+  async subscribeMember(
+    userId: number,
+    levelId: number,
+  ): Promise<MemberSubscription> {
     const memberInfo = await this.getMemberInfoById(userId);
     const memberLevel = await this.getMemberLevelById(levelId);
 
@@ -284,8 +320,6 @@ export class MemberService {
     await this.memberSubscriptionRepository.save(subscription);
     await this.memberInfoRepository.save(memberInfo);
 
-
-
     return subscription;
   }
 
@@ -296,7 +330,11 @@ export class MemberService {
    * @param limit 每页数量
    * @returns 积分历史记录列表和总数
    */
-  async getPointsHistory(userId: number, page: number = 1, limit: number = 10): Promise<{ data: PointsHistory[]; total: number }> {
+  async getPointsHistory(
+    userId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ data: PointsHistory[]; total: number }> {
     const [data, total] = await this.pointsHistoryRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
@@ -307,8 +345,6 @@ export class MemberService {
     return { data, total };
   }
 
-
-
   /**
    * 获取会员订阅记录
    * @param userId 用户ID
@@ -316,7 +352,11 @@ export class MemberService {
    * @param limit 每页数量
    * @returns 会员订阅记录列表和总数
    */
-  async getMemberSubscriptions(userId: number, page: number = 1, limit: number = 10): Promise<{ data: MemberSubscription[]; total: number }> {
+  async getMemberSubscriptions(
+    userId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ data: MemberSubscription[]; total: number }> {
     const [data, total] = await this.memberSubscriptionRepository.findAndCount({
       where: { userId },
       relations: ['level'],
@@ -333,7 +373,9 @@ export class MemberService {
    * @param activateMemberDto 调整会员状态的数据
    * @returns 更新后的会员信息
    */
-  async activateMember(activateMemberDto: ActivateMemberDto): Promise<MemberInfo> {
+  async activateMember(
+    activateMemberDto: ActivateMemberDto,
+  ): Promise<MemberInfo> {
     const { userId, active } = activateMemberDto;
     const memberInfo = await this.getMemberInfoById(userId);
 
@@ -356,6 +398,4 @@ export class MemberService {
 
     return await this.getMemberInfoById(userId); // 返回更新后的完整信息
   }
-
-
 }

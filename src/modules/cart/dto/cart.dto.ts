@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsOptional, IsNumber, Min, IsBoolean, IsJSON } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  Min,
+  IsBoolean,
+  IsJSON,
+} from 'class-validator';
 
 /**
  * 创建购物车DTO

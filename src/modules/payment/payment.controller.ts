@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
@@ -14,7 +24,9 @@ export class PaymentController {
   @Post()
   async create(@Body() createPaymentMethodDto: CreatePaymentMethodDto) {
     try {
-      const paymentMethod = await this.paymentService.create(createPaymentMethodDto);
+      const paymentMethod = await this.paymentService.create(
+        createPaymentMethodDto,
+      );
       return paymentMethod;
     } catch (error) {
       throw new HttpException(
@@ -97,9 +109,15 @@ export class PaymentController {
    * PUT /api/payment-methods/:id
    */
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updatePaymentMethodDto: UpdatePaymentMethodDto) {
+  async update(
+    @Param('id') id: number,
+    @Body() updatePaymentMethodDto: UpdatePaymentMethodDto,
+  ) {
     try {
-      const paymentMethod = await this.paymentService.update(id, updatePaymentMethodDto);
+      const paymentMethod = await this.paymentService.update(
+        id,
+        updatePaymentMethodDto,
+      );
       return paymentMethod;
     } catch (error) {
       throw new HttpException(

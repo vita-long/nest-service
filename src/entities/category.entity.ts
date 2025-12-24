@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { Product } from './product.entity';
 
 export enum CategoryType {
@@ -23,14 +30,24 @@ export class Category {
    * 分类名称
    * 分类的显示名称，不能为空
    */
-  @Column({ name: 'category_name', nullable: false, length: 100, comment: '分类名称' })
+  @Column({
+    name: 'category_name',
+    nullable: false,
+    length: 100,
+    comment: '分类名称',
+  })
   categoryName: string;
 
   /**
    * 分类描述
    * 对分类的详细描述，可选
    */
-  @Column({ name: 'description', nullable: true, length: 500, comment: '分类描述' })
+  @Column({
+    name: 'description',
+    nullable: true,
+    length: 500,
+    comment: '分类描述',
+  })
   description?: string;
 
   /**

@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 /**
@@ -33,7 +40,13 @@ export class PointsHistory {
    * 变化类型
    * 积分变化的类型：增加(increase)或减少(decrease)
    */
-  @Column({ name: 'type', type: 'enum', enum: ['increase', 'decrease'], nullable: false, comment: '变化类型' })
+  @Column({
+    name: 'type',
+    type: 'enum',
+    enum: ['increase', 'decrease'],
+    nullable: false,
+    comment: '变化类型',
+  })
   type: 'increase' | 'decrease';
 
   /**
@@ -54,14 +67,24 @@ export class PointsHistory {
    * 变化前积分
    * 积分变化前的数量
    */
-  @Column({ name: 'previous_points', type: 'int', nullable: false, comment: '变化前积分' })
+  @Column({
+    name: 'previous_points',
+    type: 'int',
+    nullable: false,
+    comment: '变化前积分',
+  })
   previousPoints: number;
 
   /**
    * 变化后积分
    * 积分变化后的数量
    */
-  @Column({ name: 'current_points', type: 'int', nullable: false, comment: '变化后积分' })
+  @Column({
+    name: 'current_points',
+    type: 'int',
+    nullable: false,
+    comment: '变化后积分',
+  })
   currentPoints: number;
 
   /**

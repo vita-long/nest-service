@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
 
 /**
@@ -32,21 +39,36 @@ export class OrderLog {
    * 操作类型
    * 执行的操作类型：创建订单、支付订单、取消订单等
    */
-  @Column({ name: 'operation_type', nullable: false, length: 50, comment: '操作类型' })
+  @Column({
+    name: 'operation_type',
+    nullable: false,
+    length: 50,
+    comment: '操作类型',
+  })
   operationType: string;
 
   /**
    * 操作内容
    * 详细的操作描述
    */
-  @Column({ name: 'operation_content', type: 'text', nullable: false, comment: '操作内容' })
+  @Column({
+    name: 'operation_content',
+    type: 'text',
+    nullable: false,
+    comment: '操作内容',
+  })
   operationContent: string;
 
   /**
    * 订单状态变更
    * 操作前后的订单状态变更（JSON格式）
    */
-  @Column({ name: 'status_change', type: 'json', nullable: true, comment: '订单状态变更' })
+  @Column({
+    name: 'status_change',
+    type: 'json',
+    nullable: true,
+    comment: '订单状态变更',
+  })
   statusChange?: {
     from: string;
     to: string;

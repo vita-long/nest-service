@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -18,19 +28,23 @@ export class ProductController {
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
-    @Query('productType') productType?: ProductType
+    @Query('productType') productType?: ProductType,
   ) {
     // 如果提供了limit和offset，优先使用它们；否则根据page和pageSize计算
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.productService.findAll(finalLimit, finalOffset, productType);
-    
+
+    const result = await this.productService.findAll(
+      finalLimit,
+      finalOffset,
+      productType,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -40,18 +54,21 @@ export class ProductController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.productService.findActive(finalLimit, finalOffset);
-    
+
+    const result = await this.productService.findActive(
+      finalLimit,
+      finalOffset,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -68,18 +85,22 @@ export class ProductController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.productService.findByCategory(id, finalLimit, finalOffset);
-    
+
+    const result = await this.productService.findByCategory(
+      id,
+      finalLimit,
+      finalOffset,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -107,7 +128,7 @@ export class ProductController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: number,
-    @Body() updateProductDto: UpdateProductDto
+    @Body() updateProductDto: UpdateProductDto,
   ) {
     return this.productService.update(id, updateProductDto);
   }
@@ -120,7 +141,7 @@ export class ProductController {
     @Body('quantity') quantity: number,
     @Body('type') type?: 'purchase' | 'sale' | 'adjustment',
     @Body('operator') operator?: string,
-    @Body('remark') remark?: string
+    @Body('remark') remark?: string,
   ) {
     await this.productService.updateStock(id, quantity, type, operator, remark);
     return { message: 'Stock updated successfully' };
@@ -131,7 +152,7 @@ export class ProductController {
   @UseGuards(JwtAuthGuard)
   async adjustStock(
     @Param('id') id: number,
-    @Body() adjustStockDto: AdjustStockDto
+    @Body() adjustStockDto: AdjustStockDto,
   ) {
     await this.productService.adjustStock(id, adjustStockDto);
     return { message: 'Stock adjusted successfully' };
@@ -145,18 +166,22 @@ export class ProductController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.productService.getStockHistory(id, finalLimit, finalOffset);
-    
+
+    const result = await this.productService.getStockHistory(
+      id,
+      finalLimit,
+      finalOffset,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -168,18 +193,22 @@ export class ProductController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.productService.getLowStockProducts(threshold, finalLimit, finalOffset);
-    
+
+    const result = await this.productService.getLowStockProducts(
+      threshold,
+      finalLimit,
+      finalOffset,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -190,18 +219,22 @@ export class ProductController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.productService.findPointsProducts(isActive, finalLimit, finalOffset);
-    
+
+    const result = await this.productService.findPointsProducts(
+      isActive,
+      finalLimit,
+      finalOffset,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -210,7 +243,7 @@ export class ProductController {
   @UseGuards(JwtAuthGuard)
   async updateSales(
     @Param('id') id: number,
-    @Body('quantity') quantity: number
+    @Body('quantity') quantity: number,
   ) {
     await this.productService.updateSales(id, quantity);
     return { message: 'Sales updated successfully' };

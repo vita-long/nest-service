@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 /**
  * 用户实体类
@@ -17,7 +23,12 @@ export class User {
    * 用户名
    * 登录账号，必须唯一且不能为空
    */
-  @Column({ name: 'username', unique: true, nullable: false, comment: '用户名' })
+  @Column({
+    name: 'username',
+    unique: true,
+    nullable: false,
+    comment: '用户名',
+  })
   username: string;
 
   /**
@@ -45,7 +56,12 @@ export class User {
    * 第三方平台OpenID
    * 用于第三方登录绑定，唯一，可选
    */
-  @Column({ name: 'openid', unique: true, nullable: true, comment: '第三方平台OpenID' })
+  @Column({
+    name: 'openid',
+    unique: true,
+    nullable: true,
+    comment: '第三方平台OpenID',
+  })
   openid?: string;
 
   /**
@@ -66,14 +82,23 @@ export class User {
    * 登录状态
    * 标识用户当前是否在线，1-在线，0-离线，默认为离线
    */
-  @Column({ name: 'status', default: false, comment: '登录状态: 1-在线，0-离线' })
+  @Column({
+    name: 'status',
+    default: false,
+    comment: '登录状态: 1-在线，0-离线',
+  })
   status: boolean;
 
   /**
    * 用户昵称
    * 显示名称，可选，最大长度255
    */
-  @Column({ name: 'nickname', nullable: true, length: 255, comment: '用户昵称' })
+  @Column({
+    name: 'nickname',
+    nullable: true,
+    length: 255,
+    comment: '用户昵称',
+  })
   nickname?: string;
 
   /**

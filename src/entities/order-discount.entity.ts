@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
 import { Coupon } from './coupons.entity';
 
@@ -33,21 +40,38 @@ export class OrderDiscount {
    * 优惠券码
    * 优惠券的唯一标识
    */
-  @Column({ name: 'coupon_code', nullable: false, length: 50, comment: '优惠券码' })
+  @Column({
+    name: 'coupon_code',
+    nullable: false,
+    length: 50,
+    comment: '优惠券码',
+  })
   couponCode: string;
 
   /**
    * 优惠券名称
    * 优惠券的显示名称
    */
-  @Column({ name: 'coupon_name', nullable: false, length: 255, comment: '优惠券名称' })
+  @Column({
+    name: 'coupon_name',
+    nullable: false,
+    length: 255,
+    comment: '优惠券名称',
+  })
   couponName: string;
 
   /**
    * 优惠金额
    * 该优惠券在订单中实际抵扣的金额
    */
-  @Column({ name: 'discount_amount', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '优惠金额' })
+  @Column({
+    name: 'discount_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '优惠金额',
+  })
   discountAmount: number;
 
   /**

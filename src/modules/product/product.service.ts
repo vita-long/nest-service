@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product, ProductType } from '../../entities/product.entity';
@@ -13,8 +17,9 @@ import { StockHistory } from '../../entities/stock-history.entity';
 export class ProductService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
-    @InjectRepository(StockHistory) private stockHistoryRepository: Repository<StockHistory>,
-    private categoryService: CategoryService
+    @InjectRepository(StockHistory)
+    private stockHistoryRepository: Repository<StockHistory>,
+    private categoryService: CategoryService,
   ) {}
 
   // 不再需要生成自定义产品ID，使用自增ID
@@ -32,44 +37,52 @@ export class ProductService {
     return this.productRepository.save(product);
   }
   // 查询所有商品（带分页）
-  async findAll(limit?: number, offset?: number, productType?: ProductType): Promise<{ list: Product[], total: number }> {
+  async findAll(
+    limit?: number,
+    offset?: number,
+    productType?: ProductType,
+  ): Promise<{ list: Product[]; total: number }> {
     const query = this.productRepository.createQueryBuilder('product');
-    
+
     if (productType) {
       query.where('product.productType = :productType', { productType });
     }
-    
+
     if (limit) {
       query.limit(limit);
     }
     if (offset) {
       query.offset(offset);
     }
-    
+
     const [items, totalCount] = await query
       .leftJoinAndSelect('product.category', 'category')
       .orderBy('product.createdAt', 'DESC')
       .getManyAndCount();
-    
+
     return { list: items, total: totalCount };
   }
   // 查询激活的商品（带分页）
-  async findActive(limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
-    const query = this.productRepository.createQueryBuilder('product')
+  async findActive(
+    limit?: number,
+    offset?: number,
+  ): Promise<{ list: Product[]; total: number }> {
+    const query = this.productRepository
+      .createQueryBuilder('product')
       .where('product.isActive = :isActive', { isActive: true });
-    
+
     if (limit) {
       query.limit(limit);
     }
     if (offset) {
       query.offset(offset);
     }
-    
+
     const [items, totalCount] = await query
       .leftJoinAndSelect('product.category', 'category')
       .orderBy('product.createdAt', 'DESC')
       .getManyAndCount();
-    
+
     return { list: items, total: totalCount };
   }
 
@@ -78,17 +91,20 @@ export class ProductService {
       where: { id },
       relations: ['category'],
     });
-    
+
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
-    return product!;
+    return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     // 检查产品是否存在
     await this.findById(id);
-    
+
     // 如果更新分类ID，验证分类是否存在
     if (updateProductDto.categoryId) {
       await this.categoryService.findById(updateProductDto.categoryId);
@@ -101,30 +117,37 @@ export class ProductService {
   async remove(id: number): Promise<void> {
     // 检查产品是否存在
     await this.findById(id);
-    
+
     const result = await this.productRepository.delete({ id });
     if (result.affected === 0) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
 
-  async findByCategory(categoryId: number, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
+  async findByCategory(
+    categoryId: number,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ list: Product[]; total: number }> {
     // 验证分类是否存在
     await this.categoryService.findById(categoryId);
 
-    const query = this.productRepository.createQueryBuilder('product')
+    const query = this.productRepository
+      .createQueryBuilder('product')
       .where('product.categoryId = :categoryId', { categoryId })
       .leftJoinAndSelect('product.category', 'category');
-    
+
     if (limit) {
       query.limit(limit);
     }
     if (offset) {
       query.offset(offset);
     }
-    
-    const [items, totalCount] = await query.orderBy('product.createdAt', 'DESC').getManyAndCount();
-    
+
+    const [items, totalCount] = await query
+      .orderBy('product.createdAt', 'DESC')
+      .getManyAndCount();
+
     return { list: items, total: totalCount };
   }
 
@@ -146,69 +169,116 @@ export class ProductService {
     });
   }
 
-  async updateStock(productId: number, quantity: number, type: 'purchase' | 'sale' | 'adjustment' = 'adjustment', operator?: string, remark?: string): Promise<void> {
-    const product = await this.findById(productId);
+  async updateStock(
+    productId: number,
+    quantity: number,
+    type: 'purchase' | 'sale' | 'adjustment' = 'adjustment',
+    operator?: string,
+    remark?: string,
+    manager?: any, // 接受可选的manager参数，用于在事务内部使用
+  ): Promise<void> {
+    // 根据是否提供了manager参数选择使用事务内的manager还是默认的repository
+    const productRepository =
+      manager?.getRepository(Product) || this.productRepository;
+    const stockHistoryRepository =
+      manager?.getRepository(StockHistory) || this.stockHistoryRepository;
+
+    // 查找产品
+    const product = await productRepository.findOne({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+
     const newStock = product.stock + quantity;
-    
+
     if (newStock < 0) {
       throw new BadRequestException('Insufficient stock');
     }
-    
-    await this.productRepository.update({ id: productId }, { stock: newStock });
-    
+
+    // 更新库存
+    await productRepository.update({ id: productId }, { stock: newStock });
+
     // 记录库存历史
-    const stockHistory = this.stockHistoryRepository.create({
+    const stockHistory = stockHistoryRepository.create({
       productId: product.id,
       previousStock: product.stock,
       changeQuantity: quantity,
       currentStock: newStock,
       type,
       operator,
-      remark
+      remark,
     });
-    
-    await this.stockHistoryRepository.save(stockHistory);
+
+    await stockHistoryRepository.save(stockHistory);
   }
 
-  async adjustStock(productId: number, adjustStockDto: AdjustStockDto): Promise<void> {
+  async adjustStock(
+    productId: number,
+    adjustStockDto: AdjustStockDto,
+    manager?: any,
+  ): Promise<void> {
     const { changeQuantity, type, operator, remark } = adjustStockDto;
-    await this.updateStock(productId, changeQuantity, type, operator, remark);
+    await this.updateStock(
+      productId,
+      changeQuantity,
+      type,
+      operator,
+      remark,
+      manager,
+    );
   }
 
-  async getStockHistory(productId: number, limit?: number, offset?: number): Promise<{ list: StockHistory[], total: number }> {
+  async getStockHistory(
+    productId: number,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ list: StockHistory[]; total: number }> {
     // 验证产品是否存在
     await this.findById(productId);
 
-    const query = this.stockHistoryRepository.createQueryBuilder('stockHistory')
+    const query = this.stockHistoryRepository
+      .createQueryBuilder('stockHistory')
       .where('stockHistory.productId = :productId', { productId })
       .leftJoinAndSelect('stockHistory.product', 'product');
-    
+
     if (limit) {
       query.limit(limit);
     }
     if (offset) {
       query.offset(offset);
     }
-    
-    const [items, totalCount] = await query.orderBy('stockHistory.createdAt', 'DESC').getManyAndCount();
-    
+
+    const [items, totalCount] = await query
+      .orderBy('stockHistory.createdAt', 'DESC')
+      .getManyAndCount();
+
     return { list: items, total: totalCount };
   }
 
-  async getLowStockProducts(threshold: number = 10, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
-    const query = this.productRepository.createQueryBuilder('product')
+  async getLowStockProducts(
+    threshold: number = 10,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ list: Product[]; total: number }> {
+    const query = this.productRepository
+      .createQueryBuilder('product')
       .where('product.stock <= :threshold', { threshold })
       .leftJoinAndSelect('product.category', 'category');
-    
+
     if (limit) {
       query.limit(limit);
     }
     if (offset) {
       query.offset(offset);
     }
-    
-    const [items, totalCount] = await query.orderBy('product.stock', 'ASC').getManyAndCount();
-    
+
+    const [items, totalCount] = await query
+      .orderBy('product.stock', 'ASC')
+      .getManyAndCount();
+
     return { list: items, total: totalCount };
   }
 
@@ -219,32 +289,50 @@ export class ProductService {
    * @param offset 偏移量
    * @returns 积分商品列表和总数
    */
-  async findPointsProducts(isActive?: boolean, limit?: number, offset?: number): Promise<{ list: Product[], total: number }> {
-    const query = this.productRepository.createQueryBuilder('product')
-      .where('product.productType = :productType', { productType: ProductType.Points })
+  async findPointsProducts(
+    isActive?: boolean,
+    limit?: number,
+    offset?: number,
+  ): Promise<{ list: Product[]; total: number }> {
+    const query = this.productRepository
+      .createQueryBuilder('product')
+      .where('product.productType = :productType', {
+        productType: ProductType.Points,
+      })
       .leftJoinAndSelect('product.category', 'category');
-    
+
     if (isActive !== undefined) {
       query.andWhere('product.isActive = :isActive', { isActive });
     }
-    
+
     if (limit) {
       query.limit(limit);
     }
     if (offset) {
       query.offset(offset);
     }
-    
-    const [items, totalCount] = await query.orderBy('product.createdAt', 'DESC').getManyAndCount();
-    
+
+    const [items, totalCount] = await query
+      .orderBy('product.createdAt', 'DESC')
+      .getManyAndCount();
+
     return { list: items, total: totalCount };
   }
 
   async updateSales(productId: number, quantity: number): Promise<void> {
     const product = await this.findById(productId);
-    await this.productRepository.update({ id: productId }, { sales: product.sales + quantity });
-    
+    await this.productRepository.update(
+      { id: productId },
+      { sales: product.sales + quantity },
+    );
+
     // 记录销售库存变化
-    await this.updateStock(productId, -quantity, 'sale', undefined, `Sale of ${quantity} units`);
+    await this.updateStock(
+      productId,
+      -quantity,
+      'sale',
+      undefined,
+      `Sale of ${quantity} units`,
+    );
   }
 }

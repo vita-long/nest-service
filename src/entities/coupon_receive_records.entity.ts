@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Coupon } from './coupons.entity';
 
@@ -6,9 +14,9 @@ import { Coupon } from './coupons.entity';
  * 优惠券使用状态枚举
  */
 export enum CouponUseStatus {
-  UNUSED = 'unused',      // 未使用
-  USED = 'used',          // 已使用
-  EXPIRED = 'expired'     // 已过期
+  UNUSED = 'unused', // 未使用
+  USED = 'used', // 已使用
+  EXPIRED = 'expired', // 已过期
 }
 
 /**
@@ -42,28 +50,49 @@ export class CouponReceiveRecord {
    * 优惠券码
    * 优惠券的唯一标识
    */
-  @Column({ name: 'coupon_code', nullable: false, length: 50, comment: '优惠券码' })
+  @Column({
+    name: 'coupon_code',
+    nullable: false,
+    length: 50,
+    comment: '优惠券码',
+  })
   couponCode: string;
 
   /**
    * 领取时间
    * 用户领取优惠券的时间
    */
-  @Column({ name: 'receive_time', type: 'datetime', nullable: false, comment: '领取时间' })
+  @Column({
+    name: 'receive_time',
+    type: 'datetime',
+    nullable: false,
+    comment: '领取时间',
+  })
   receiveTime: Date;
 
   /**
    * 使用状态
    * 优惠券的使用状态：未使用、已使用、已过期
    */
-  @Column({ name: 'status', type: 'enum', enum: CouponUseStatus, default: CouponUseStatus.UNUSED, comment: '使用状态' })
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: CouponUseStatus,
+    default: CouponUseStatus.UNUSED,
+    comment: '使用状态',
+  })
   status: CouponUseStatus;
 
   /**
    * 使用时间
    * 用户使用优惠券的时间
    */
-  @Column({ name: 'used_time', type: 'datetime', nullable: true, comment: '使用时间' })
+  @Column({
+    name: 'used_time',
+    type: 'datetime',
+    nullable: true,
+    comment: '使用时间',
+  })
   usedTime?: Date;
 
   /**

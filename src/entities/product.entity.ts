@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { Category } from './category.entity';
 
 export enum ProductType {
@@ -30,21 +39,40 @@ export class Product {
    * 产品描述
    * 对产品的详细描述，可选
    */
-  @Column({ name: 'description', type: 'text', nullable: true, comment: '产品描述' })
+  @Column({
+    name: 'description',
+    type: 'text',
+    nullable: true,
+    comment: '产品描述',
+  })
   description?: string;
 
   /**
    * 基础价格
    * 产品的基础销售价格，不包含任何折扣或额外费用
    */
-  @Column({ name: 'base_price', type: 'decimal', precision: 10, scale: 2, nullable: true, comment: '基础价格' })
+  @Column({
+    name: 'base_price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    comment: '基础价格',
+  })
   basePrice: number;
 
   /**
    * 产品价格
    * 产品的销售价格，支持小数
    */
-  @Column({ name: 'price', type: 'decimal', precision: 10, scale: 2, nullable: true, comment: '产品价格' })
+  @Column({
+    name: 'price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    comment: '产品价格',
+  })
   price: number;
 
   /**
@@ -129,13 +157,22 @@ export class Product {
    * 商品类型：普通商品 | 积分商品
    * 后续可能扩展其他类型
    */
-  @Column({ name: 'product_type', default: ProductType.Normal, comment: '商品类型' })
+  @Column({
+    name: 'product_type',
+    default: ProductType.Normal,
+    comment: '商品类型',
+  })
   productType: ProductType;
 
   /**
    * 积分商品价格
    * 积分商品的销售价格，用户需要积分才能购买
    */
-  @Column({ name: 'points_price', type: 'int', nullable: true, comment: '积分商品价格' })
+  @Column({
+    name: 'points_price',
+    type: 'int',
+    nullable: true,
+    comment: '积分商品价格',
+  })
   pointsPrice?: number;
 }

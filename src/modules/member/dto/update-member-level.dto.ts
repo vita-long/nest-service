@@ -1,4 +1,12 @@
-import { IsOptional, IsNotEmpty, IsNumber, IsDecimal, IsBoolean, IsInt, Min } from 'class-validator';
+import {
+  IsOptional,
+  IsNotEmpty,
+  IsNumber,
+  IsDecimal,
+  IsBoolean,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 /**
  * 更新会员等级的数据传输对象

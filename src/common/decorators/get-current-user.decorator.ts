@@ -8,12 +8,12 @@ export const GetCurrentUser = createParamDecorator(
   (data: string | undefined, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    
+
     // 如果提供了特定字段名，则只返回该字段的值
     if (data) {
       return user?.[data];
     }
-    
+
     // 否则返回完整的用户对象
     return user;
   },

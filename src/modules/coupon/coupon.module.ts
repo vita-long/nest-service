@@ -11,9 +11,12 @@ import { RedisCacheModule } from '../../common/modules/cache/cache.module';
  * 注册优惠券相关的实体、服务和控制器
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Coupon, CouponReceiveRecord]), RedisCacheModule],
+  imports: [
+    TypeOrmModule.forFeature([Coupon, CouponReceiveRecord]),
+    RedisCacheModule,
+  ],
   controllers: [CouponController],
   providers: [CouponService],
-  exports: [CouponService]
+  exports: [CouponService],
 })
 export class CouponModule {}

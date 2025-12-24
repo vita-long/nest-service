@@ -6,10 +6,7 @@ import { User } from '@/entities/user.entity';
 import { RedisCacheModule } from '@/common/modules/cache/cache.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    RedisCacheModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User]), RedisCacheModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

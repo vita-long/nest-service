@@ -7,7 +7,10 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
-  constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>) {}
+  constructor(
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const category = this.categoryRepository.create({
@@ -28,7 +31,7 @@ export class CategoryService {
     if (type !== undefined) {
       Object.assign(where, { type });
     }
-    
+
     return this.categoryRepository.find({
       where,
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
@@ -43,9 +46,12 @@ export class CategoryService {
     return category;
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(
+    id: number,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     const category = await this.findById(id);
-    
+
     // 不允许将分类设置为其自身的子分类
     if (updateCategoryDto.parentId === category.id) {
       throw new Error('A category cannot be set as its own child');
@@ -58,7 +64,7 @@ export class CategoryService {
   async remove(id: number): Promise<void> {
     // 检查分类是否存在
     await this.findById(id);
-    
+
     const result = await this.categoryRepository.delete({ id });
     if (result.affected === 0) {
       throw new NotFoundException(`Category with ID ${id} not found`);

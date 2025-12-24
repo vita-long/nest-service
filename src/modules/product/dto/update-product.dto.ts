@@ -1,4 +1,12 @@
-import { IsOptional, MaxLength, IsNumber, Min, IsBoolean, IsArray, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  MaxLength,
+  IsNumber,
+  Min,
+  IsBoolean,
+  IsArray,
+  IsEnum,
+} from 'class-validator';
 import { ProductType } from '../../../entities/product.entity';
 
 export class UpdateProductDto {

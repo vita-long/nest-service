@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Product } from './product.entity';
 
 /**
@@ -34,28 +41,47 @@ export class StockHistory {
    * 变化前库存
    * 库存变化前的数量
    */
-  @Column({ name: 'previous_stock', type: 'int', nullable: false, comment: '变化前库存' })
+  @Column({
+    name: 'previous_stock',
+    type: 'int',
+    nullable: false,
+    comment: '变化前库存',
+  })
   previousStock: number;
 
   /**
    * 变化数量
    * 库存变化的数量（正数表示增加，负数表示减少）
    */
-  @Column({ name: 'change_quantity', type: 'int', nullable: false, comment: '变化数量' })
+  @Column({
+    name: 'change_quantity',
+    type: 'int',
+    nullable: false,
+    comment: '变化数量',
+  })
   changeQuantity: number;
 
   /**
    * 变化后库存
    * 库存变化后的数量
    */
-  @Column({ name: 'current_stock', type: 'int', nullable: false, comment: '变化后库存' })
+  @Column({
+    name: 'current_stock',
+    type: 'int',
+    nullable: false,
+    comment: '变化后库存',
+  })
   currentStock: number;
 
   /**
    * 库存类型
    * 库存变化的类型：purchase（采购）、sale（销售）、adjustment（调整）
    */
-  @Column({ name: 'type', nullable: false, comment: '库存类型: purchase(采购), sale(销售), adjustment(调整)' })
+  @Column({
+    name: 'type',
+    nullable: false,
+    comment: '库存类型: purchase(采购), sale(销售), adjustment(调整)',
+  })
   type: 'purchase' | 'sale' | 'adjustment';
 
   /**
@@ -76,6 +102,10 @@ export class StockHistory {
    * 创建时间
    * 记录创建的时间
    */
-  @CreateDateColumn({ name: 'created_at', type: 'datetime', comment: '创建时间' })
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'datetime',
+    comment: '创建时间',
+  })
   createdAt: Date;
 }

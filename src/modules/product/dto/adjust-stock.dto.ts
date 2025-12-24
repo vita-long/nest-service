@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsEnum, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  MaxLength,
+} from 'class-validator';
 
 export class AdjustStockDto {
   @IsNotEmpty({ message: 'Change quantity is required' })
@@ -6,7 +12,9 @@ export class AdjustStockDto {
   changeQuantity: number;
 
   @IsNotEmpty({ message: 'Type is required' })
-  @IsEnum(['purchase', 'sale', 'adjustment'], { message: 'Type must be one of: purchase, sale, adjustment' })
+  @IsEnum(['purchase', 'sale', 'adjustment'], {
+    message: 'Type must be one of: purchase, sale, adjustment',
+  })
   type: 'purchase' | 'sale' | 'adjustment';
 
   @IsOptional()

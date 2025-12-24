@@ -51,14 +51,11 @@ export class LoggerService implements NestLoggerService {
   error(message: any, options?: LoggerOptions): void {
     // 如果是错误对象，提取错误信息和堆栈
     if (message instanceof Error) {
-      this.logger.error(
-        message.message,
-        {
-          ...this.getMeta(options),
-          stack: message.stack,
-          error: message.name,
-        },
-      );
+      this.logger.error(message.message, {
+        ...this.getMeta(options),
+        stack: message.stack,
+        error: message.name,
+      });
     } else {
       this.logger.error(this.normalizeMessage(message), this.getMeta(options));
     }
@@ -68,7 +65,10 @@ export class LoggerService implements NestLoggerService {
    * 记录致命错误
    */
   fatal(message: any, options?: LoggerOptions): void {
-    this.logger.error(`[FATAL] ${this.normalizeMessage(message)}`, this.getMeta(options));
+    this.logger.error(
+      `[FATAL] ${this.normalizeMessage(message)}`,
+      this.getMeta(options),
+    );
   }
 
   /**
@@ -77,7 +77,7 @@ export class LoggerService implements NestLoggerService {
   createLogger(context: string): LoggerService {
     return {
       ...this,
-      debug: (message: any, options?: LoggerOptions) => 
+      debug: (message: any, options?: LoggerOptions) =>
         this.debug(message, { ...options, context }),
       log: (message: any, options?: LoggerOptions) => {
         // 兼容Nest标准log方法接口
@@ -86,13 +86,13 @@ export class LoggerService implements NestLoggerService {
         }
         return this.info(message, { ...options, context });
       },
-      info: (message: any, options?: LoggerOptions) => 
+      info: (message: any, options?: LoggerOptions) =>
         this.info(message, { ...options, context }),
-      warn: (message: any, options?: LoggerOptions) => 
+      warn: (message: any, options?: LoggerOptions) =>
         this.warn(message, { ...options, context }),
-      error: (message: any, options?: LoggerOptions) => 
+      error: (message: any, options?: LoggerOptions) =>
         this.error(message, { ...options, context }),
-      fatal: (message: any, options?: LoggerOptions) => 
+      fatal: (message: any, options?: LoggerOptions) =>
         this.fatal(message, { ...options, context }),
     } as LoggerService;
   }
@@ -104,9 +104,11 @@ export class LoggerService implements NestLoggerService {
     if (typeof message === 'string') {
       return message;
     }
-    
+
     try {
-      return typeof message === 'object' ? JSON.stringify(message) : String(message);
+      return typeof message === 'object'
+        ? JSON.stringify(message)
+        : String(message);
     } catch (e) {
       return String(message);
     }
@@ -119,7 +121,7 @@ export class LoggerService implements NestLoggerService {
     if (!options) {
       return {};
     }
-    
+
     const { context, ...rest } = options;
     return {
       context,

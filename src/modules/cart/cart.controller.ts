@@ -1,6 +1,20 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
-import { CreateCartDto, UpdateCartDto, BatchUpdateCartDto } from './dto/cart.dto';
+import {
+  CreateCartDto,
+  UpdateCartDto,
+  BatchUpdateCartDto,
+} from './dto/cart.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 /**
@@ -49,7 +63,11 @@ export class CartController {
    */
   @Put(':cartId')
   @UseGuards(JwtAuthGuard)
-  async updateCart(@Request() req, @Param('cartId') cartId: number, @Body() updateCartDto: UpdateCartDto) {
+  async updateCart(
+    @Request() req,
+    @Param('cartId') cartId: number,
+    @Body() updateCartDto: UpdateCartDto,
+  ) {
     // 从请求中获取用户ID
     const userId = req.user.id;
     return this.cartService.updateCart(userId, cartId, updateCartDto);
@@ -63,7 +81,10 @@ export class CartController {
    */
   @Put('batch')
   @UseGuards(JwtAuthGuard)
-  async batchUpdateCart(@Request() req, @Body() batchUpdateCartDto: BatchUpdateCartDto) {
+  async batchUpdateCart(
+    @Request() req,
+    @Body() batchUpdateCartDto: BatchUpdateCartDto,
+  ) {
     // 从请求中获取用户ID
     const userId = req.user.id;
     return this.cartService.batchUpdateCart(userId, batchUpdateCartDto);

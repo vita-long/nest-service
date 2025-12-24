@@ -1,8 +1,19 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
-import { Coupon, CouponStatus, CouponType } from '../../entities/coupons.entity';
-import { CouponReceiveRecord, CouponUseStatus } from '../../entities/coupon_receive_records.entity';
+import {
+  Coupon,
+  CouponStatus,
+  CouponType,
+} from '../../entities/coupons.entity';
+import {
+  CouponReceiveRecord,
+  CouponUseStatus,
+} from '../../entities/coupon_receive_records.entity';
 import { CreateCouponDto, FindCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { IssueCouponDto } from './dto/issue-coupon.dto';
@@ -16,7 +27,8 @@ import { nanoid } from 'nanoid';
 export class CouponService {
   constructor(
     @InjectRepository(Coupon) private couponRepository: Repository<Coupon>,
-    @InjectRepository(CouponReceiveRecord) private couponReceiveRecordRepository: Repository<CouponReceiveRecord>
+    @InjectRepository(CouponReceiveRecord)
+    private couponReceiveRecordRepository: Repository<CouponReceiveRecord>,
   ) {}
 
   /**
@@ -34,16 +46,18 @@ export class CouponService {
    */
   async create(createCouponDto: CreateCouponDto): Promise<Coupon> {
     let couponCode = createCouponDto.code;
-    
+
     // 如果没有提供优惠券码，则自动生成
     if (!couponCode) {
       let isUnique = false;
       let generatedCode: string;
-      
+
       // 生成唯一的优惠券码
       while (!isUnique) {
         generatedCode = this.generateCouponCode();
-        const existingCoupon = await this.couponRepository.findOneBy({ code: generatedCode });
+        const existingCoupon = await this.couponRepository.findOneBy({
+          code: generatedCode,
+        });
         if (!existingCoupon) {
           couponCode = generatedCode;
           isUnique = true;
@@ -51,7 +65,9 @@ export class CouponService {
       }
     } else {
       // 如果提供了优惠券码，验证是否已存在
-      const existingCoupon = await this.couponRepository.findOneBy({ code: couponCode });
+      const existingCoupon = await this.couponRepository.findOneBy({
+        code: couponCode,
+      });
       if (existingCoupon) {
         throw new BadRequestException(`优惠券码 ${couponCode} 已存在`);
       }
@@ -67,7 +83,7 @@ export class CouponService {
       ...createCouponDto,
       code: couponCode,
       remainingQuantity: createCouponDto.totalQuantity,
-      status: CouponStatus.ACTIVE
+      status: CouponStatus.ACTIVE,
     });
 
     return this.couponRepository.save(coupon);
@@ -81,7 +97,9 @@ export class CouponService {
    * @param type 优惠券类型
    * @returns 优惠券列表和总数
    */
-  async findAll(findCouponDto: FindCouponDto): Promise<{ list: Coupon[], total: number }> {
+  async findAll(
+    findCouponDto: FindCouponDto,
+  ): Promise<{ list: Coupon[]; total: number }> {
     const { limit, offset, status, type, name, code } = findCouponDto;
 
     const query = this.couponRepository.createQueryBuilder('coupon');
@@ -116,7 +134,9 @@ export class CouponService {
     }
 
     // 执行查询
-    const [items, totalCount] = await query.orderBy('coupon.createdAt', 'DESC').getManyAndCount();
+    const [items, totalCount] = await query
+      .orderBy('coupon.createdAt', 'DESC')
+      .getManyAndCount();
 
     return { list: items, total: totalCount };
   }
@@ -127,7 +147,10 @@ export class CouponService {
    * @returns 优惠券对象
    */
   async findById(id: number): Promise<Coupon> {
-    const coupon = await this.couponRepository.findOneBy({ id, status: Not(CouponStatus.DELETED) });
+    const coupon = await this.couponRepository.findOneBy({
+      id,
+      status: Not(CouponStatus.DELETED),
+    });
     if (!coupon) {
       throw new NotFoundException(`ID为 ${id} 的优惠券不存在`);
     }
@@ -140,7 +163,10 @@ export class CouponService {
    * @returns 优惠券对象
    */
   async findByCode(code: string): Promise<Coupon> {
-    const coupon = await this.couponRepository.findOneBy({ code, status: Not(CouponStatus.DELETED) });
+    const coupon = await this.couponRepository.findOneBy({
+      code,
+      status: Not(CouponStatus.DELETED),
+    });
     if (!coupon) {
       throw new NotFoundException(`优惠券码 ${code} 不存在`);
     }
@@ -162,15 +188,24 @@ export class CouponService {
       if (updateCouponDto.startTime > updateCouponDto.endTime) {
         throw new BadRequestException('生效时间必须早于过期时间');
       }
-    } else if (updateCouponDto.startTime && updateCouponDto.startTime > coupon.endTime) {
+    } else if (
+      updateCouponDto.startTime &&
+      updateCouponDto.startTime > coupon.endTime
+    ) {
       throw new BadRequestException('生效时间必须早于当前过期时间');
-    } else if (updateCouponDto.endTime && updateCouponDto.endTime < coupon.startTime) {
+    } else if (
+      updateCouponDto.endTime &&
+      updateCouponDto.endTime < coupon.startTime
+    ) {
       throw new BadRequestException('过期时间必须晚于当前生效时间');
     }
 
     // 验证剩余数量是否大于等于0且不超过总数量
     if (updateCouponDto.remainingQuantity !== undefined) {
-      const totalQuantity = updateCouponDto.totalQuantity !== undefined ? updateCouponDto.totalQuantity : coupon.totalQuantity;
+      const totalQuantity =
+        updateCouponDto.totalQuantity !== undefined
+          ? updateCouponDto.totalQuantity
+          : coupon.totalQuantity;
       if (updateCouponDto.remainingQuantity < 0) {
         throw new BadRequestException('剩余数量不能为负数');
       }
@@ -181,7 +216,10 @@ export class CouponService {
 
     // 验证总数量是否大于等于剩余数量
     if (updateCouponDto.totalQuantity !== undefined) {
-      const remainingQuantity = updateCouponDto.remainingQuantity !== undefined ? updateCouponDto.remainingQuantity : coupon.remainingQuantity;
+      const remainingQuantity =
+        updateCouponDto.remainingQuantity !== undefined
+          ? updateCouponDto.remainingQuantity
+          : coupon.remainingQuantity;
       if (updateCouponDto.totalQuantity < remainingQuantity) {
         throw new BadRequestException('总数量不能小于剩余数量');
       }
@@ -210,7 +248,9 @@ export class CouponService {
    * @param issueCouponDto 发放优惠券的数据传输对象
    * @returns 发放结果
    */
-  async issueCoupon(issueCouponDto: IssueCouponDto): Promise<{ success: boolean; message: string }> {
+  async issueCoupon(
+    issueCouponDto: IssueCouponDto,
+  ): Promise<{ success: boolean; message: string }> {
     // 验证优惠券是否存在
     const coupon = await this.findById(issueCouponDto.couponId);
 
@@ -233,7 +273,7 @@ export class CouponService {
     // 创建优惠券领取记录
     const receiveRecords: CouponReceiveRecord[] = [];
     const nowDate = new Date();
-    
+
     for (let i = 0; i < issueCouponDto.quantity; i++) {
       // 为每个领取的优惠券生成记录
       const receiveRecord = this.couponReceiveRecordRepository.create({
@@ -241,7 +281,7 @@ export class CouponService {
         couponId: coupon.id,
         couponCode: coupon.code,
         receiveTime: nowDate,
-        status: CouponUseStatus.UNUSED
+        status: CouponUseStatus.UNUSED,
       });
       receiveRecords.push(receiveRecord);
     }
@@ -251,7 +291,7 @@ export class CouponService {
 
     // 更新优惠券剩余数量
     await this.couponRepository.update(issueCouponDto.couponId, {
-      remainingQuantity: coupon.remainingQuantity - issueCouponDto.quantity
+      remainingQuantity: coupon.remainingQuantity - issueCouponDto.quantity,
     });
 
     return { success: true, message: '优惠券发放成功' };
@@ -263,8 +303,12 @@ export class CouponService {
    * @param status 优惠券使用状态（可选）
    * @returns 用户领取的优惠券列表
    */
-  async findUserCoupons(userId: number, status?: CouponUseStatus): Promise<CouponReceiveRecord[]> {
-    const query = this.couponReceiveRecordRepository.createQueryBuilder('record');
+  async findUserCoupons(
+    userId: number,
+    status?: CouponUseStatus,
+  ): Promise<CouponReceiveRecord[]> {
+    const query =
+      this.couponReceiveRecordRepository.createQueryBuilder('record');
 
     // 关联查询优惠券信息
     query.leftJoinAndSelect('record.coupon', 'coupon');

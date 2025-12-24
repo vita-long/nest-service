@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsNumber, Min, IsObject, ValidateNested, IsDate } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  Min,
+  IsObject,
+  ValidateNested,
+  IsDate,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // 收货地址验证类

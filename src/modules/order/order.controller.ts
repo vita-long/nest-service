@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -15,19 +25,19 @@ export class OrderController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     // 如果提供了limit和offset，优先使用它们；否则根据page和pageSize计算
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
+
     const result = await this.orderService.findAll(finalLimit, finalOffset);
-    
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -46,18 +56,22 @@ export class OrderController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
   ) {
     const finalLimit = limit || pageSize;
     const finalOffset = offset !== undefined ? offset : (page - 1) * pageSize;
-    
-    const result = await this.orderService.findByUserId(id, finalLimit, finalOffset);
-    
+
+    const result = await this.orderService.findByUserId(
+      id,
+      finalLimit,
+      finalOffset,
+    );
+
     return {
       list: result.list,
       total: result.total,
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
@@ -73,7 +87,7 @@ export class OrderController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: number,
-    @Body() updateOrderDto: UpdateOrderDto
+    @Body() updateOrderDto: UpdateOrderDto,
   ) {
     return this.orderService.update(id, updateOrderDto);
   }
@@ -81,10 +95,7 @@ export class OrderController {
   // 更新订单状态（需要认证）
   @Put(':id/status')
   @UseGuards(JwtAuthGuard)
-  async updateStatus(
-    @Param('id') id: number,
-    @Body('status') status: string
-  ) {
+  async updateStatus(@Param('id') id: number, @Body('status') status: string) {
     return this.orderService.updateStatus(id, status);
   }
 

@@ -6,7 +6,7 @@ import { join } from 'path';
 export default registerAs('logger', () => {
   // 确保日志目录存在
   const logsDir = join(process.cwd(), 'logs');
-  
+
   // 错误日志的传输配置
   const errorTransport = new winstonDailyRotateFile({
     level: 'error',
@@ -50,12 +50,12 @@ export default registerAs('logger', () => {
             logMsg += ` [${context}]`;
           }
           logMsg += `: ${message}`;
-          
+
           // 添加其他元数据
           if (Object.keys(meta).length > 0) {
             logMsg += ` ${JSON.stringify(meta, null, 2)}`;
           }
-          
+
           return logMsg;
         },
       ),
@@ -69,11 +69,7 @@ export default registerAs('logger', () => {
         winston.format.timestamp(),
         winston.format.json(),
       ),
-      transports: [
-        errorTransport,
-        combinedTransport,
-        consoleTransport,
-      ],
+      transports: [errorTransport, combinedTransport, consoleTransport],
     },
   };
 });

@@ -4,9 +4,7 @@ import { RedisCacheService } from './cache.service';
 import redisConfig from './redis.config';
 
 @Module({
-  imports: [
-    ConfigModule.forFeature(redisConfig),
-  ],
+  imports: [ConfigModule.forFeature(redisConfig)],
   providers: [RedisCacheService],
   exports: [RedisCacheService],
 })
@@ -25,10 +23,14 @@ export class RedisCacheModule implements OnModuleInit {
       if (isConnected) {
         this.logger.log('Redis connection established successfully');
       } else {
-        this.logger.warn('Failed to establish Redis connection - cache functionality will be disabled');
+        this.logger.warn(
+          'Failed to establish Redis connection - cache functionality will be disabled',
+        );
       }
     } catch (error) {
-      this.logger.warn(`Error during Redis initialization: ${error.message} - cache functionality will be disabled`);
+      this.logger.warn(
+        `Error during Redis initialization: ${error.message} - cache functionality will be disabled`,
+      );
     }
   }
 }

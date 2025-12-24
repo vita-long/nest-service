@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -13,11 +19,11 @@ export interface JwtPayload {
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   private readonly logger = new Logger(JwtAuthGuard.name);
-  
+
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-    private redisCacheService: RedisCacheService
+    private redisCacheService: RedisCacheService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -29,11 +35,11 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const [bearer, token] = authHeader.split(' ');
-    
+
     if (bearer !== 'Bearer' || !token) {
       throw new UnauthorizedException('Invalid authorization header format');
     }
-    
+
     try {
       const algorithm = this.configService.get('jwt.algorithm') || 'HS256';
       const payload = this.jwtService.verify<JwtPayload>(token, {
@@ -42,42 +48,53 @@ export class JwtAuthGuard implements CanActivate {
       });
 
       console.log(payload);
-      
+
       const userId = payload.userId;
-      
+
       try {
         // 验证令牌是否在Redis中存在（通过用户ID查找所有活跃令牌）
         const userTokenKey = `user:${userId}:tokens`;
-        const userTokens = await this.redisCacheService.get<string[]>(userTokenKey);
-        
+        const userTokens =
+          await this.redisCacheService.get<string[]>(userTokenKey);
+
         if (userTokens && userTokens.length > 0) {
           // 检查令牌是否在Redis中有效
           let tokenFound = false;
           for (const tokenId of userTokens) {
             const storedTokenData = await this.redisCacheService.get<any>(
-              tokenId, 
-              'access_token'
+              tokenId,
+              'access_token',
             );
-            
+
             if (storedTokenData && storedTokenData.accessToken === token) {
               tokenFound = true;
               break;
             }
           }
-          
+
           if (!tokenFound) {
-            this.logger.warn('Token validation failed: Token not found in Redis', { userId });
+            this.logger.warn(
+              'Token validation failed: Token not found in Redis',
+              { userId },
+            );
             throw new UnauthorizedException('Token has been invalidated');
           }
-        } else if (userTokens !== null) { // 如果userTokens为null，说明Redis连接失败，跳过验证
-          this.logger.warn('Token validation failed: No active tokens found for user', { userId });
+        } else if (userTokens !== null) {
+          // 如果userTokens为null，说明Redis连接失败，跳过验证
+          this.logger.warn(
+            'Token validation failed: No active tokens found for user',
+            { userId },
+          );
           throw new UnauthorizedException('Token has been invalidated');
         }
       } catch (redisError) {
         // Redis连接失败，跳过Redis验证，只依赖JWT验证
-        this.logger.warn('Redis validation skipped due to connection error: ' + redisError.message);
+        this.logger.warn(
+          'Redis validation skipped due to connection error: ' +
+            redisError.message,
+        );
       }
-      
+
       request.user = payload;
       this.logger.debug('Token validation successful', { userId });
       return true;

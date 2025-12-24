@@ -22,7 +22,7 @@ import { MemberSubscription } from '../../entities/member-subscription.entity';
       MemberLevel,
       MemberInfo,
       PointsHistory,
-      MemberSubscription
+      MemberSubscription,
     ]),
   ],
   controllers: [MemberController],

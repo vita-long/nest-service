@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  Index,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Product } from './product.entity';
 
@@ -34,28 +42,52 @@ export class Cart {
    * 商品数量
    * 购物车中该商品的数量
    */
-  @Column({ name: 'quantity', type: 'int', nullable: false, default: 1, comment: '商品数量' })
+  @Column({
+    name: 'quantity',
+    type: 'int',
+    nullable: false,
+    default: 1,
+    comment: '商品数量',
+  })
   quantity: number;
 
   /**
    * 商品规格
    * 购物车中该商品的规格
    */
-  @Column({ name: 'specifications', type: 'json', nullable: true, comment: '商品规格' })
+  @Column({
+    name: 'specifications',
+    type: 'json',
+    nullable: true,
+    comment: '商品规格',
+  })
   specifications?: any;
 
   /**
    * 商品价格
    * 购物车中该商品的价格
    */
-  @Column({ name: 'price', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '商品价格' })
+  @Column({
+    name: 'price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '商品价格',
+  })
   price: number;
 
   /**
    * 选中状态
    * 购物车中该商品是否被选中
    */
-  @Column({ name: 'is_selected', type: 'boolean', nullable: false, default: true, comment: '选中状态' })
+  @Column({
+    name: 'is_selected',
+    type: 'boolean',
+    nullable: false,
+    default: true,
+    comment: '选中状态',
+  })
   isSelected: boolean;
 
   /**

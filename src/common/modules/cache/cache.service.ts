@@ -21,9 +21,9 @@ export class RedisCacheService {
     try {
       const config = this.configService.get('redis');
       const options = createRedisClientOptions(config);
-      
+
       // 显式指定类型参数以避免类型兼容性问题
-      this.client = createClient(options as RedisClientOptions);
+      this.client = createClient(options);
 
       // 监听连接事件
       this.client.on('connect', () => {
@@ -48,7 +48,10 @@ export class RedisCacheService {
       // 连接Redis
       await this.client.connect();
     } catch (error) {
-      this.logger.error(`Failed to initialize Redis client: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to initialize Redis client: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -90,7 +93,8 @@ export class RedisCacheService {
       }
 
       const cacheKey = this.generateKey(key, prefix);
-      const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
+      const serializedValue =
+        typeof value === 'string' ? value : JSON.stringify(value);
       const expireTime = ttl || this.defaultTtl;
 
       await this.client.set(cacheKey, serializedValue, {
@@ -100,7 +104,10 @@ export class RedisCacheService {
       this.logger.debug(`Cache set successfully for key: ${cacheKey}`);
       return true;
     } catch (error) {
-      this.logger.error(`Failed to set cache for key ${key}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to set cache for key ${key}: ${error.message}`,
+        error.stack,
+      );
       return false;
     }
   }
@@ -132,7 +139,10 @@ export class RedisCacheService {
         return value as unknown as T;
       }
     } catch (error) {
-      this.logger.error(`Failed to get cache for key ${key}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to get cache for key ${key}: ${error.message}`,
+        error.stack,
+      );
       return null;
     }
   }
@@ -152,15 +162,18 @@ export class RedisCacheService {
 
       const cacheKey = this.generateKey(key, prefix);
       const result = await this.client.del(cacheKey);
-      
+
       const success = result > 0;
       if (success) {
         this.logger.debug(`Cache deleted successfully for key: ${cacheKey}`);
       }
-      
+
       return success;
     } catch (error) {
-      this.logger.error(`Failed to delete cache for key ${key}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to delete cache for key ${key}: ${error.message}`,
+        error.stack,
+      );
       return false;
     }
   }
@@ -182,7 +195,10 @@ export class RedisCacheService {
       const result = await this.client.exists(cacheKey);
       return result > 0;
     } catch (error) {
-      this.logger.error(`Failed to check existence for key ${key}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to check existence for key ${key}: ${error.message}`,
+        error.stack,
+      );
       return false;
     }
   }
@@ -226,7 +242,10 @@ export class RedisCacheService {
       // Redis expire命令返回1表示成功，0表示键不存在，转换为布尔值
       return result === 1;
     } catch (error) {
-      this.logger.error(`Failed to set expire for key ${key}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to set expire for key ${key}: ${error.message}`,
+        error.stack,
+      );
       return false;
     }
   }
@@ -247,7 +266,10 @@ export class RedisCacheService {
       const cacheKey = this.generateKey(key, prefix);
       return await this.client.ttl(cacheKey);
     } catch (error) {
-      this.logger.error(`Failed to get ttl for key ${key}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to get ttl for key ${key}: ${error.message}`,
+        error.stack,
+      );
       return -2;
     }
   }
@@ -265,10 +287,15 @@ export class RedisCacheService {
       }
 
       const keys = await this.client.keys(pattern);
-      this.logger.debug(`Retrieved ${keys.length} keys with pattern: ${pattern}`);
+      this.logger.debug(
+        `Retrieved ${keys.length} keys with pattern: ${pattern}`,
+      );
       return keys;
     } catch (error) {
-      this.logger.error(`Failed to get all keys: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to get all keys: ${error.message}`,
+        error.stack,
+      );
       return [];
     }
   }
@@ -278,7 +305,9 @@ export class RedisCacheService {
    * @param pattern 匹配模式（可选），默认为'*'匹配所有键
    * @returns 缓存信息数组，包含键名、值和过期时间
    */
-  async getAllCacheInfo(pattern: string = '*'): Promise<Array<{key: string, value: any, ttl: number}>> {
+  async getAllCacheInfo(
+    pattern: string = '*',
+  ): Promise<Array<{ key: string; value: any; ttl: number }>> {
     try {
       if (!this.isConnected) {
         this.logger.warn('Redis is not connected, skipping get all cache info');
@@ -286,7 +315,7 @@ export class RedisCacheService {
       }
 
       const keys = await this.getAllKeys(pattern);
-      const cacheInfo: Array<{key: string, value: any, ttl: number}> = [];
+      const cacheInfo: Array<{ key: string; value: any; ttl: number }> = [];
 
       for (const key of keys) {
         try {
@@ -294,7 +323,7 @@ export class RedisCacheService {
           const value = await this.client.get(key);
           // 获取过期时间
           const ttl = await this.client.ttl(key);
-          
+
           // 尝试解析JSON
           let parsedValue;
           try {
@@ -302,14 +331,16 @@ export class RedisCacheService {
           } catch {
             parsedValue = value;
           }
-          
+
           cacheInfo.push({
             key,
             value: parsedValue,
             ttl,
           });
         } catch (itemError) {
-          this.logger.warn(`Failed to get info for key ${key}: ${itemError.message}`);
+          this.logger.warn(
+            `Failed to get info for key ${key}: ${itemError.message}`,
+          );
           // 跳过单个键的错误，继续处理其他键
         }
       }
@@ -317,7 +348,10 @@ export class RedisCacheService {
       this.logger.debug(`Retrieved details for ${cacheInfo.length} keys`);
       return cacheInfo;
     } catch (error) {
-      this.logger.error(`Failed to get all cache info: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to get all cache info: ${error.message}`,
+        error.stack,
+      );
       return [];
     }
   }
@@ -331,12 +365,15 @@ export class RedisCacheService {
       if (!this.client) {
         await this.initializeClient();
       }
-      
+
       await this.client.ping();
       this.logger.debug('Redis connection test successful');
       return true;
     } catch (error) {
-      this.logger.error(`Redis connection test failed: ${error.message}`, error.stack);
+      this.logger.error(
+        `Redis connection test failed: ${error.message}`,
+        error.stack,
+      );
       return false;
     }
   }
@@ -351,7 +388,10 @@ export class RedisCacheService {
         this.logger.log('Redis client disconnected');
       }
     } catch (error) {
-      this.logger.error(`Failed to disconnect Redis client: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to disconnect Redis client: ${error.message}`,
+        error.stack,
+      );
     }
   }
 }

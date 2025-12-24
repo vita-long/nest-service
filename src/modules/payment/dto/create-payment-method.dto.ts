@@ -1,10 +1,16 @@
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsNumber, IsObject } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsObject,
+} from 'class-validator';
 
 /**
  * 创建支付方式DTO
  */
 export class CreatePaymentMethodDto {
-
   @IsNotEmpty({ message: '支付方式名称不能为空' })
   @IsString({ message: '支付方式名称必须是字符串' })
   name: string;

@@ -18,7 +18,15 @@ import { CouponModule } from '../coupon/coupon.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderDiscount, OrderLog, Product, Coupon, CouponReceiveRecord]),
+    TypeOrmModule.forFeature([
+      Order,
+      OrderItem,
+      OrderDiscount,
+      OrderLog,
+      Product,
+      Coupon,
+      CouponReceiveRecord,
+    ]),
     AuthModule, // 导入AuthModule以获取JwtService
     RedisCacheModule, // 导入RedisCacheModule以获取RedisCacheService
     ConfigModule.forFeature(jwtConfig), // 导入JWT配置

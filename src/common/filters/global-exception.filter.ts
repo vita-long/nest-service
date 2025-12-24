@@ -1,7 +1,19 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, BadRequestException, Inject } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { LoggerService } from '../modules/logger/logger.service';
-import { ErrorCode, ErrorCodeToHttpStatus, ErrorCodeToMessage } from '../types/exception';
+import {
+  ErrorCode,
+  ErrorCodeToHttpStatus,
+  ErrorCodeToMessage,
+} from '../types/exception';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -27,11 +39,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // 处理自定义异常（已经包含code和msg的异常响应）
     if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse();
-      
+
       // 检查是否是我们的自定义异常响应格式
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const customResponse = exceptionResponse as any;
-        
+
         if (customResponse.code && customResponse.msg) {
           // 自定义异常响应格式
           errorResponse = {
@@ -45,29 +57,36 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         } else {
           // NestJS 标准 HttpException
           statusCode = exception.getStatus();
-          
+
           // 处理验证错误
           if (exception instanceof BadRequestException) {
             errorResponse.code = ErrorCode.VALIDATION_ERROR;
-            
+
             if (Array.isArray(customResponse.message)) {
               // 确保所有错误都转换为字符串
-              const messages = customResponse.message.map((error: any): string => {
-                // 如果是对象且有constraints属性，提取详细错误信息
-                if (typeof error === 'object' && error.constraints) {
-                  return Object.values(error.constraints).join(', ');
-                }
-                // 其他情况直接转换为字符串
-                return String(error);
-              });
+              const messages = customResponse.message.map(
+                (error: any): string => {
+                  // 如果是对象且有constraints属性，提取详细错误信息
+                  if (typeof error === 'object' && error.constraints) {
+                    return Object.values(error.constraints).join(', ');
+                  }
+                  // 其他情况直接转换为字符串
+                  return String(error);
+                },
+              );
               errorResponse.msg = messages.join('; ');
             } else {
-              errorResponse.msg = String(customResponse.message || ErrorCodeToMessage[ErrorCode.VALIDATION_ERROR]);
+              errorResponse.msg = String(
+                customResponse.message ||
+                  ErrorCodeToMessage[ErrorCode.VALIDATION_ERROR],
+              );
             }
           } else {
             // 其他HttpException
             errorResponse.code = this.mapHttpStatusToErrorCode(statusCode);
-            errorResponse.msg = String(customResponse.message || exception.message);
+            errorResponse.msg = String(
+              customResponse.message || exception.message,
+            );
           }
         }
       } else {
@@ -80,7 +99,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       // 非HttpException（未预期的错误）
       errorResponse.code = ErrorCode.SYSTEM_ERROR;
       errorResponse.msg = ErrorCodeToMessage[ErrorCode.SYSTEM_ERROR];
-      
+
       // 在开发环境可以显示详细错误信息
       if (process.env.NODE_ENV !== 'production') {
         errorResponse.details = exception.message || 'Unknown error';

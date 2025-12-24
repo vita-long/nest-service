@@ -1,5 +1,20 @@
-import { IsNotEmpty, IsOptional, MaxLength, IsEnum, IsNumber, Min, IsDate, IsJSON, IsArray, ArrayUnique } from 'class-validator';
-import { CouponType, CouponSource, CouponStatus } from '@/entities/coupons.entity';
+import {
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  IsEnum,
+  IsNumber,
+  Min,
+  IsDate,
+  IsJSON,
+  IsArray,
+  ArrayUnique,
+} from 'class-validator';
+import {
+  CouponType,
+  CouponSource,
+  CouponStatus,
+} from '@/entities/coupons.entity';
 
 /**
  * 创建优惠券DTO
@@ -35,8 +50,6 @@ export class CreateCouponDto {
   @Min(0, { message: '折扣不能为负数' })
   discount?: number;
 
-
-
   @IsNotEmpty({ message: '开始时间不能为空' })
   @IsDate({ message: '无效的开始时间格式' })
   startTime: Date;
@@ -67,7 +80,6 @@ export class CreateCouponDto {
   @IsEnum(CouponSource, { message: '无效的优惠券来源' })
   source: CouponSource;
 
-
   @IsOptional()
   @MaxLength(255, { message: '优惠券描述不能超过255个字符' })
   description?: string;
@@ -82,7 +94,7 @@ export class FindCouponDto {
 
   @IsOptional()
   limit?: number;
-  
+
   @IsOptional()
   offset?: number;
 

@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
 
@@ -33,28 +40,52 @@ export class OrderItem {
    * 产品名称
    * 订单创建时的产品名称（快照）
    */
-  @Column({ name: 'product_name', nullable: false, length: 255, comment: '产品名称' })
+  @Column({
+    name: 'product_name',
+    nullable: false,
+    length: 255,
+    comment: '产品名称',
+  })
   productName: string;
 
   /**
    * 产品单价
    * 订单创建时的产品单价（快照）
    */
-  @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '产品单价' })
+  @Column({
+    name: 'unit_price',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '产品单价',
+  })
   unitPrice: number;
 
   /**
    * 购买数量
    * 该产品的购买数量
    */
-  @Column({ name: 'quantity', type: 'int', nullable: false, comment: '购买数量' })
+  @Column({
+    name: 'quantity',
+    type: 'int',
+    nullable: false,
+    comment: '购买数量',
+  })
   quantity: number;
 
   /**
    * 小计金额
    * 该产品的小计金额（单价 * 数量）
    */
-  @Column({ name: 'subtotal_amount', type: 'decimal', precision: 10, scale: 2, nullable: false, comment: '小计金额' })
+  @Column({
+    name: 'subtotal_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    comment: '小计金额',
+  })
   subtotalAmount: number;
 
   /**
